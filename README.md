@@ -6,6 +6,14 @@ One Arduino controls the VGA output, controls the slave Arduino to play music/sf
 The code produces 2-bit color output, and in this project we have used the following colors:
 ![2-bit-colors](/Arcade-Main/res/ColorTable2bit.png)
 
+| | R | G | B|
+| --- | --- | --- | --- |
+|00: Black|	0|	0|	0|
+|01: Cyan|	0|	1|	1|
+|10: Red|	1|	0|	0|
+|11: White|	1|	1|	1|
+
+
 The project milestones:
 - [x] Get a stable VGA image on a TFT-screen using PWM.
 - [x] Use an analog potentiometer to control the game paddle.
