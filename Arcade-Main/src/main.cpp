@@ -1,15 +1,8 @@
 /*
- VGA Arcade - Version 20230117
+ VGA Arcade - Version 20230123
 
- CHANGES 2022-12-21 -- 2023-01-17 FOR 1TE663 PROJECT.
- CHANGES BY TOBIAS HOLM AND MOHAMMED NOUR KAMALMAZ:
- [x] Code adjustment for C++ syntax.
- [ ] (Hardware constructed and assembled.)
- [ ] Both ordinary buttons are now active low with internal pull-ups.
- [ ] Blue VGA-line now connected. TODO: Improve VGAX to use more colors.
- [ ] Wii-remote routine will be created.
- [ ] SID Music and sound effects using an slave Atmel 328P added.
-
+ CHANGES 2022-12-21 -- 2023-01-23 FOR 1TE663 PROJECT.
+ CHANGES BY TOBIAS HOLM (/TH:) AND MOHAMMED NOUR KAMALMAZ (/MK:)
 */
 
 #include <avr/io.h> // To set IO pins using C
