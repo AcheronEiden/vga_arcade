@@ -4,8 +4,6 @@
 One Arduino controls the VGA output, controls the slave Arduino to play music/sfx, reads Wii-controller and handles the game logic.
 
 The code produces 2-bit color output, and in this project we have used the following colors:
-![2-bit-colors](/Arcade-Main/res/ColorTable2bit.png)
-
 | | R | G | B|
 | --- | --- | --- | --- |
 |00: Black|	0|	0|	0|
