@@ -15,3 +15,4 @@ The code produces 2-bit color output, and in this project we have used the follo
 tobias!
 LITEN SAGA: blablabla --NYHET! Två för en!
 
+test igen
