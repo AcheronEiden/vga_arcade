@@ -13,6 +13,6 @@ The code produces 2-bit color output, and in this project we have used the follo
 ---5e
 
 tobias! HOHOOOOOOOO!
-LITEN SAGA: blablabla --NYHET! Två för en!
+LITEN : blablabla --NYHET! Två för en!
 
 test igen
