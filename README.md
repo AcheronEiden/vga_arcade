@@ -34,4 +34,4 @@ The actual project progress are marked below:
 
 This project uses the following public libraries as code sections in this project. The libraries are often modified to suit this project and we have made comments in the code when edits are made. In some parts of this project only smaller fractions of the public libraries are used.
 
-Wii-Nunchuk communication (https://github.com/infusion/Fritzing)
+Wii-Nunchuk communication [https://github.com/infusion/Fritzing](https://github.com/infusion/Fritzing)
