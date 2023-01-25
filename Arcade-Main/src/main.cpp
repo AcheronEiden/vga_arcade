@@ -5,7 +5,7 @@
  CHANGES BY TOBIAS HOLM (/TH:) AND MOHAMMED NOUR KAMALMAZ (/MK:)
 */
 
-#include <avr/io.h> // To set IO pins using C
+#include <avr/io.h> //TH: To set IO pins using C
 
 /********************************************
  * Arduino Breakout                         *
