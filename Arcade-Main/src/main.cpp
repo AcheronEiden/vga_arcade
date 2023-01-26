@@ -144,7 +144,8 @@ static const char str16[] PROGMEM="VGA Arcade"; //TH:
 static const char str17[] PROGMEM="1TE663";     //TH:
 static const char str18[] PROGMEM="Game Over!!!"; 
 
-#define BUTTON_PIN D7          //TH: Digital
+#define BUTTON_PIN A2          //TH: Digital (Button on prototype board closest to "T 10")
+#define SOUND_PIN A4           //TH: Digital (Button on prototype board closest to "T 0")
 #define WHEEL_PIN 3            //TH: Analog
 
                                //TH:---vvv---
@@ -175,6 +176,7 @@ void setup() {
 
 // ************* Variable definition ***************************************
 boolean buttonStatus = 0;
+boolean button2Status = 0; //TH: Added for sound control on/off
 int wheelPosition; 
 int padPosition; 
 int padPositionOld; 
@@ -211,6 +213,8 @@ int nBricks = 0;
 int color; 
 const float speedIncrement = 1.25992105; 
 int beginning = 0; 
+int snd = 0; //TH: 0=No sound, 1=Sound on
+int sndwait = 1; //TH: 1=Sound toggled, waiting for release of button
 
 void parameterUpdate() {
   angle = angleDeg/180* pi; 
@@ -219,15 +223,18 @@ void parameterUpdate() {
 }
 
 void toneL(int frequency, int duration) {
-   vga.tone(frequency); 
-   vga.delay(duration); 
-   vga.noTone(); 
+   if(snd == 1) {
+      vga.tone(frequency);
+      vga.delay(duration);
+      vga.noTone(); 
+   }
 }
 
 void processInputs() {
   padPositionOld = padPosition; 
   wheelPosition = analogRead(WHEEL_PIN);
-  buttonStatus = (digitalRead(BUTTON_PIN)); //TH: Changed to active low 
+  buttonStatus = !(digitalRead(BUTTON_PIN)); //TH: Changed to active low 
+  button2Status = !(digitalRead(SOUND_PIN)); //TH: Active low, turn sound on/off 
   padPosition = map(wheelPosition, 1023, 0, 1 + PadLenght, width - 1 - PadLenght); 
 }
 
@@ -276,14 +283,16 @@ void ballStart(){
 }
 
 void gameOver() {
-  toneL(660, 200); 
-  toneL(330, 200);
-  toneL(165, 200); 
-  toneL(82, 200);
-  vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str18, 25, 40, 1);
-  ballStart(); 
-  vga.clear(0);
-  gameIni(); 
+//   if(snd == 1) {
+      toneL(660, 200); 
+      toneL(330, 200);
+      toneL(165, 200); 
+      toneL(82, 200);
+//   }
+   vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str18, 25, 40, 1);
+   ballStart(); 
+   vga.clear(0);
+   gameIni(); 
 }
 
 void gameOverNonStop() {
@@ -429,6 +438,27 @@ void loop() {
   
   ballCoordinates(); 
   
+   if (button2Status == 0){ //TH: Check if sound should be toggled on/off
+      if (sndwait == 0) {
+         if (snd == 0) {
+            snd = 1; //TH: Temp turn on sound to indicate the sound is turned off
+            toneL(800, 30);
+            toneL(600, 30);
+            toneL(400, 30);
+            snd = 0;
+         } else {
+            toneL(200, 30);
+            toneL(100, 30);
+            toneL(150, 50);
+         }
+         snd = !snd;
+         sndwait = 1; //TH: Wait for release of button 2
+      }
+   }
+   if (button2Status == 1){ //TH: Wait for release of button 2
+      sndwait = 0; //TH: Button 2 is released
+   }
+
   //TH: Fixed paranthesis around OR operand
   if ( (ballX != ballXold) | (ballY != ballYold) ) { 
      if (cancelSafe == 0) {
@@ -475,7 +505,11 @@ void loop() {
            {
               
               lives = lives - 1; 
-              if (lives |= 0){toneL(110,100);}
+              if (lives |= 0){
+//                  if(snd == 1) {
+                     toneL(110,100);
+//                  }
+              }
               drawLives(); 
               ballStart(); 
               cancelSafe = 0; 
@@ -484,7 +518,9 @@ void loop() {
         }
         else if (ballX > 1 && ballX + 1 < width - 1 && ballY > 1) // *********** ball hits a brick *******************
         {
-           toneL(440,30);
+//            if(snd == 1) {
+              toneL(440,30);
+//            }
            if ( (hitScore == 1) | (hitScore == 3) ) {ballXhit = ballX; ballYhit = ballY;}          //TH: Fixed paranthesis around OR operand
            if ( (hitScore == 2) | (hitScore == 10) ) {ballXhit = ballX + 1; ballYhit = ballY;}     //TH: Fixed paranthesis around OR operand
            if ( (hitScore == 8) | (hitScore == 12) ) {ballXhit = ballX + 1; ballYhit = ballY + 1;} //TH: Fixed paranthesis around OR operand

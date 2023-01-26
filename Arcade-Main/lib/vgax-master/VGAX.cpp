@@ -32,7 +32,7 @@ You can modify this value to center the framebuffer vertically, or not*/
 (defined(ATMEGA2560_HIGHRES) || defined(ATMEGA2560_MAXRES))
   #define SKIPLINES 32
 #else
-  #define SKIPLINES 89
+  #define SKIPLINES 110
 //  #define SKIPLINES 90 // H-pos on screen, 32=High Up
 #endif
 
@@ -152,11 +152,12 @@ ISR(TIMER2_OVF_vect) {
 
     Instead of using a loop i use the .rept assembler directive to generate an 
     unrolled loop of 30 iterations.
+    //TH: Changed center line below from 8 to 16 HSYNC correction for better centering
     */
     asm volatile (
       "    ldi r20, 4       \n\t" //const for <<2bit
-      #ifdef VGAX_DEV_DEPRECATED_NOT
-      ".rept 8              \n\t" //center line (ORGINAL WAS 14 REPITITIONS HERE)
+      #ifdef VGAX_DEV_DEPRECATED //TH: Activated this line for HSYNC control
+      ".rept 16              \n\t" //center line (ORGINAL WAS 14 REPITITIONS HERE)
       "    nop              \n\t" //
       ".endr                \n\t" //
       #endif
@@ -192,10 +193,10 @@ ISR(TIMER2_OVF_vect) {
       aline=-1;
       rlinecnt++;
     } else {
-      #ifdef VGAX_DEV_DEPRECATED_NOT
+      #ifdef VGAX_DEV_DEPRECATED //TH: Activated this line for HSYNC control
       //small delay to keep the line signal aligned
       asm volatile(
-        ".rept 17 \n\t" //
+        ".rept 0 \n\t" //TH: Was orginally 17 here
         "    nop  \n\t" //
         ".endr    \n\t" //
       :::);

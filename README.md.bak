@@ -11,12 +11,6 @@ The code produces 2-bit color output, and in this project we have used the follo
 |10: Red|	1|	0|	0|
 |11: White|	1|	1|	1|
 
-The VGA-signal is produced using two interrupts.
-
-TIMER1_OVF_vect: VSYNC interrupt, 60Hz
-
-TIMER2_OVF_vect: HSYNC interrupt, 15kHz
-
 
 The project milestones:
 - [x] Get a stable VGA image on a TFT-screen using PWM.
