@@ -3,8 +3,11 @@
 
 One Arduino controls the VGA output, controls the slave Arduino to play music/sfx, reads Wii-controller and handles the game logic.
 
-The code produces 2-bit color output, and in this project we have used the following colors:
-| | R | G | B|
+The VGA-library implement a 120x60px framebuffer. The code produces 2-bit color output,
+and in this project we have used the colors black, white, red and cyan.
+The framebuffer is stored inside SRAM and require at least 1800 bytes.
+This mean that on ATMega328 the programs cannot use more than 200 bytes of SRAM.
+| | R (pin D6 (PD6)) | G (pin D7 (PD7)) | B (pin D7 (PD7))|
 | --- | --- | --- | --- |
 |00: Black|	0|	0|	0|
 |01: Cyan|	0|	1|	1|
@@ -12,12 +15,13 @@ The code produces 2-bit color output, and in this project we have used the follo
 |11: White|	1|	1|	1|
 See color combinations at [smaffer github page](https://github.com/smaffer/vgax).
 
+The VGA-library can also produce a simple square wave tone output to a buzzer, that must be connected on pin A0 (PC0).
 
 The VGA-signal is produced using two interrupts.
 
-TIMER1_OVF_vect: VSYNC interrupt, 60Hz
+TIMER1_OVF_vect: VSYNC interrupt, 60Hz, output on pin D9 (PB1).
 
-TIMER2_OVF_vect: HSYNC interrupt, 15kHz
+TIMER2_OVF_vect: HSYNC interrupt, 15kHz, output on pin D3 (PD3).
 
 
 The project milestones:
