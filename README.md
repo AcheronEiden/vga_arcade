@@ -10,6 +10,8 @@ The code produces 2-bit color output, and in this project we have used the follo
 |01: Cyan|	0|	1|	1|
 |10: Red|	1|	0|	0|
 |11: White|	1|	1|	1|
+See color combinations at [smaffer github page](https://github.com/smaffer/vgax).
+
 
 The VGA-signal is produced using two interrupts.
 
