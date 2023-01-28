@@ -1,11 +1,14 @@
 /*
  VGA Arcade - Version 20230123
 
- CHANGES 2022-12-21 -- 2023-01-23 FOR 1TE663 PROJECT.
+ CHANGES 2022-12-21 -- 2023-01-27 FOR 1TE663 PROJECT.
  CHANGES BY TOBIAS HOLM (/TH:) AND MOHAMMED NOUR KAMALMAZ (/MK:)
 */
 
 #include <avr/io.h> //TH: To set IO pins using C
+#include <Nunchuk.h> //TH: To use Wii-controller
+#include <Wire.h> //TH: To use Wii-controller
+
 
 /********************************************
  * Arduino Breakout                         *
@@ -144,8 +147,8 @@ static const char str16[] PROGMEM="VGA Arcade"; //TH:
 static const char str17[] PROGMEM="1TE663";     //TH:
 static const char str18[] PROGMEM="Game Over!!!"; 
 
-#define BUTTON_PIN A2          //TH: Digital (Button on prototype board closest to "T 10")
-#define SOUND_PIN A4           //TH: Digital (Button on prototype board closest to "T 0")
+#define BUTTON_PIN A2          //TH: Digital A2 (Button on prototype board closest to "T 10")
+#define SOUND_PIN A4           //TH: Digital A4 (Button on prototype board closest to "T 0")
 #define WHEEL_PIN 3            //TH: Analog
 
                                //TH:---vvv---
@@ -160,17 +163,23 @@ const unsigned char PS_128 = (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
                                //TH:---^^^--- 
 
 void setup() {
-  vga.begin();
-  randomSeed(1);               //TH:---vvv---
-  DDRB  = 0b00000010;          // B-pins where 0=inputs
-  PORTB = 0b00000000;          // B-pins where 1=Pullups
-  DDRC  = 0b00000001;          // C-pins where 0=inputs
-  PORTC = 0b00010100;          // C-pins where 1=Pullups
-  DDRD  = 0b11101000;          // D-pins where 0=inputs
-  PORTD = 0b00000000;          // D-pins where 1=Pullups
-                               // set up the ADC
-  ADCSRA &= ~PS_128;           // remove bits set by Arduino library
-  ADCSRA |= PS_4;              // set our own prescaler to 4. N.B. PS_2 does not work!!!
+
+   vga.begin();
+   randomSeed(1);               //TH:---vvv---
+   DDRB  = 0b00000010;          // B-pins where 0=inputs
+   PORTB = 0b00000000;          // B-pins where 1=Pullups
+   DDRC  = 0b00100001;          // C-pins where 0=inputs
+   PORTC = 0b00110100;          // C-pins where 1=Pullups
+   DDRD  = 0b11101000;          // D-pins where 0=inputs
+   PORTD = 0b00000000;          // D-pins where 1=Pullups
+                                 // set up the ADC
+   ADCSRA &= ~PS_128;           // remove bits set by Arduino library
+   ADCSRA |= PS_4;              // set our own prescaler to 4. N.B. PS_2 does not work!!!
+  
+   Wire.begin(); //TH: To use Wii-controller
+//   Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz)
+   Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
+   nunchuk_init(); //TH: Init the nunchuk
                                //TH:---^^^--- 
 }
 
@@ -231,11 +240,25 @@ void toneL(int frequency, int duration) {
 }
 
 void processInputs() {
-  padPositionOld = padPosition; 
-  wheelPosition = analogRead(WHEEL_PIN);
-  buttonStatus = !(digitalRead(BUTTON_PIN)); //TH: Changed to active low 
-  button2Status = !(digitalRead(SOUND_PIN)); //TH: Active low, turn sound on/off 
-  padPosition = map(wheelPosition, 1023, 0, 1 + PadLenght, width - 1 - PadLenght); 
+   padPositionOld = padPosition;
+
+   //TH: Use Wii-controller if present, otherwise use analog potentiometer
+//   if (nunchuk_read()) {
+   if (1==1) {
+      // Work with nunchuk_data
+//      nunchuk_print();
+      buttonStatus = nunchuk_buttonZ();
+      button2Status = nunchuk_buttonC();
+      wheelPosition = nunchuk_joystickX();
+      padPosition = map(wheelPosition, 1023, 0, 1 + PadLenght, width - 1 - PadLenght);
+      padPosition = width/2;
+   } else {
+      buttonStatus = !(digitalRead(BUTTON_PIN)); //TH: Changed to active low 
+      button2Status = !(digitalRead(SOUND_PIN)); //TH: Active low, turn sound on/off 
+      wheelPosition = analogRead(WHEEL_PIN);
+      padPosition = map(wheelPosition, 1023, 0, 1 + PadLenght, width - 1 - PadLenght);
+   }
+
 }
 
 //TH: declare prototypes needed in C99
