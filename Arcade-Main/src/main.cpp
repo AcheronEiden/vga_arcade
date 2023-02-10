@@ -1,13 +1,13 @@
 /*
- VGA Arcade - Version 20230123
+ VGA Arcade - Version 20230210
 
- CHANGES 2022-12-21 -- 2023-01-27 FOR 1TE663 PROJECT.
+ CHANGES 2022-12-21 -- 2023-0?-?? FOR 1TE663 PROJECT.
  CHANGES BY TOBIAS HOLM (/TH:) AND MOHAMMED NOUR KAMALMAZ (/MK:)
 */
 
 #include <avr/io.h> //TH: To set IO pins using C
-#include <Nunchuk.h> //TH: To use Wii-controller
-#include <Wire.h> //TH: To use Wii-controller
+//#include <Nunchuk.h> //TH: To use Wii-controller, uses 35B RAM
+//#include <Wire.h> //TH: To use Wii-controller, uses 182B RAM
 
 
 /********************************************
@@ -176,10 +176,10 @@ void setup() {
    ADCSRA &= ~PS_128;           // remove bits set by Arduino library
    ADCSRA |= PS_4;              // set our own prescaler to 4. N.B. PS_2 does not work!!!
   
-   Wire.begin(); //TH: To use Wii-controller
+//   Wire.begin(); //TH: To use Wii-controller
 //   Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz)
-   Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
-   nunchuk_init(); //TH: Init the nunchuk
+//   Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
+//   nunchuk_init(); //TH: Init the nunchuk
                                //TH:---^^^--- 
 }
 
@@ -222,8 +222,8 @@ int nBricks = 0;
 int color; 
 const float speedIncrement = 1.25992105; 
 int beginning = 0; 
-int snd = 0; //TH: 0=No sound, 1=Sound on
-int sndwait = 1; //TH: 1=Sound toggled, waiting for release of button
+//int snd = 0; //TH: 0=No sound, 1=Sound on
+//int sndwait = 1; //TH: 1=Sound toggled, waiting for release of button
 
 void parameterUpdate() {
   angle = angleDeg/180* pi; 
@@ -232,11 +232,11 @@ void parameterUpdate() {
 }
 
 void toneL(int frequency, int duration) {
-   if(snd == 1) {
+//   if(snd == 1) {
       vga.tone(frequency);
       vga.delay(duration);
       vga.noTone(); 
-   }
+//   }
 }
 
 void processInputs() {
@@ -244,20 +244,22 @@ void processInputs() {
 
    //TH: Use Wii-controller if present, otherwise use analog potentiometer
 //   if (nunchuk_read()) {
-   if (1==1) {
+//   if (1==1) {
       // Work with nunchuk_data
 //      nunchuk_print();
-      buttonStatus = nunchuk_buttonZ();
-      button2Status = nunchuk_buttonC();
-      wheelPosition = nunchuk_joystickX();
-      padPosition = map(wheelPosition, 1023, 0, 1 + PadLenght, width - 1 - PadLenght);
+
+      // buttonStatus = nunchuk_buttonZ();
+      // button2Status = nunchuk_buttonC();
+      // wheelPosition = nunchuk_joystickX();
+      // padPosition = map(wheelPosition, 1023, 0, 1 + PadLenght, width - 1 - PadLenght);
       padPosition = width/2;
-   } else {
-      buttonStatus = !(digitalRead(BUTTON_PIN)); //TH: Changed to active low 
-      button2Status = !(digitalRead(SOUND_PIN)); //TH: Active low, turn sound on/off 
-      wheelPosition = analogRead(WHEEL_PIN);
-      padPosition = map(wheelPosition, 1023, 0, 1 + PadLenght, width - 1 - PadLenght);
-   }
+
+   // } else {
+   //    buttonStatus = !(digitalRead(BUTTON_PIN)); //TH: Changed to active low 
+   //    button2Status = !(digitalRead(SOUND_PIN)); //TH: Active low, turn sound on/off 
+   //    wheelPosition = analogRead(WHEEL_PIN);
+   //    padPosition = map(wheelPosition, 1023, 0, 1 + PadLenght, width - 1 - PadLenght);
+   // }
 
 }
 
@@ -461,26 +463,26 @@ void loop() {
   
   ballCoordinates(); 
   
-   if (button2Status == 0){ //TH: Check if sound should be toggled on/off
-      if (sndwait == 0) {
-         if (snd == 0) {
-            snd = 1; //TH: Temp turn on sound to indicate the sound is turned off
-            toneL(800, 30);
-            toneL(600, 30);
-            toneL(400, 30);
-            snd = 0;
-         } else {
-            toneL(200, 30);
-            toneL(100, 30);
-            toneL(150, 50);
-         }
-         snd = !snd;
-         sndwait = 1; //TH: Wait for release of button 2
-      }
-   }
-   if (button2Status == 1){ //TH: Wait for release of button 2
-      sndwait = 0; //TH: Button 2 is released
-   }
+   // if (button2Status == 0){ //TH: Check if sound should be toggled on/off
+   //    if (sndwait == 0) {
+   //       if (snd == 0) {
+   //          snd = 1; //TH: Temp turn on sound to indicate the sound is turned off
+   //          toneL(800, 30);
+   //          toneL(600, 30);
+   //          toneL(400, 30);
+   //          snd = 0;
+   //       } else {
+   //          toneL(200, 30);
+   //          toneL(100, 30);
+   //          toneL(150, 50);
+   //       }
+   //       snd = !snd;
+   //       sndwait = 1; //TH: Wait for release of button 2
+   //    }
+   // }
+   // if (button2Status == 1){ //TH: Wait for release of button 2
+   //    sndwait = 0; //TH: Button 2 is released
+   // }
 
   //TH: Fixed paranthesis around OR operand
   if ( (ballX != ballXold) | (ballY != ballYold) ) { 

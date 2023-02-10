@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "Arcade-SID"
+		},
+		{
+			"path": "."
 		}
 	],
 	"settings": {}
