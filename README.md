@@ -96,3 +96,4 @@ MOS6581 SID Emulator Arduino Library [https://github.com/cybernesto/sid-arduino-
 
 MOS6581 SID Emulator Extra examples [https://github.com/daitangio/sid-arduino-lib](https://github.com/daitangio/sid-arduino-lib)
 
+Uwe:s blogg [https://www.sciencetronics.com/greenphotons/](https://www.sciencetronics.com/greenphotons/?p=337)

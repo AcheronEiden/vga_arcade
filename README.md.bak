@@ -33,16 +33,18 @@ TIMER1 and TIMER2 are configured to generate VSYNC and HSYNC pulses.
 
 TIMER0 is used to fix the interrupt jitter. By default the TIMER0 is used by Arduino to implement these functions:
 
-- unsigned millis();
-- unsigned long micros();
-- void delay(ms); 
-- void delayMicroseconds(us);
+	unsigned millis();
+	unsigned long micros();
+	void delay(ms); 
+	void delayMicroseconds(us);
 
-Instead of using these functions, there is an alternative version provided by the VGA-library.
+Instead of using these functions, there is an alternative version provided by the VGA-library:
+
+	vga.delay(10); // Delay 10 ms
 
 VGAXUA provides an alternative version of rand() that can be used to reduce the SRAM memory usage:
 
-unsigned rand();
+	unsigned rand();
 
 
 ## Wii Nunchuk
