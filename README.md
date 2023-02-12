@@ -88,6 +88,8 @@ VGA Breakout With Arduino Uno [https://www.instructables.com/VGA-Breakout-With-A
 
 Wii-Nunchuk communication [https://github.com/infusion/Fritzing](https://github.com/infusion/Fritzing)
 
+Arduino I2C master library [https://github.com/rambo/I2C](https://github.com/rambo/I2C)
+
 Using Nunchuk with I2C [https://www.xarg.org/2016/12/using-a-wii-nunchuk-with-arduino/](https://www.xarg.org/2016/12/using-a-wii-nunchuk-with-arduino/)
 
 Technical info about the Wii Nunchuk Interface [https://bootlin.com/labs/doc/nunchuk.pdf](https://bootlin.com/labs/doc/nunchuk.pdf)

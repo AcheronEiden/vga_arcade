@@ -161,7 +161,7 @@ ISR(TIMER2_OVF_vect) {
       "    nop              \n\t" //
       ".endr                \n\t" //
       #endif
-      ".rept 30             \n\t" //output 4 pixels for each iteration
+      ".rept 28             \n\t" //output 4 pixels for each iteration. //TH:Changed 30 to 28 for new width
       "    ld r16, Z+       \n\t" //
       "    out %[port], r16 \n\t" //write pixel 1
       "    mul r16, r20     \n\t" //<<2

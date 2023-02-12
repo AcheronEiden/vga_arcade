@@ -1,13 +1,14 @@
 /*
- VGA Arcade - Version 20230210
+ VGA Arcade - Version 20230212
 
  CHANGES 2022-12-21 -- 2023-0?-?? FOR 1TE663 PROJECT.
  CHANGES BY TOBIAS HOLM (/TH:) AND MOHAMMED NOUR KAMALMAZ (/MK:)
 */
 
 #include <avr/io.h> //TH: To set IO pins using C
-//#include <Nunchuk.h> //TH: To use Wii-controller, uses 35B RAM
-//#include <Wire.h> //TH: To use Wii-controller, uses 182B RAM
+#include <Nunchuk.h> //TH: To use Wii-controller, uses 35B RAM
+#include <Wire.h> //TH: To use Wii-controller, uses 182B RAM
+//#include <I2C.h> //TH: To use Wii-controller, uses 2059-1884B= 175B RAM
 
 
 /********************************************
@@ -161,35 +162,54 @@ const unsigned char PS_32 = (1 << ADPS2) | (1 << ADPS0);
 const unsigned char PS_64 = (1 << ADPS2) | (1 << ADPS1);
 const unsigned char PS_128 = (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
                                //TH:---^^^--- 
+void toneL(int frequency, int duration) {
+//   if(snd == 1) {
+      vga.tone(frequency);
+      vga.delay(duration);
+      vga.noTone(); 
+//   }
+}
+
 
 void setup() {
 
    vga.begin();
    randomSeed(1);               //TH:---vvv---
-   DDRB  = 0b00000010;          // B-pins where 0=inputs
-   PORTB = 0b00000000;          // B-pins where 1=Pullups
-   DDRC  = 0b00100001;          // C-pins where 0=inputs
-   PORTC = 0b00110100;          // C-pins where 1=Pullups
-   DDRD  = 0b11101000;          // D-pins where 0=inputs
+   DDRB  = 0b00000010;          // B-pins DIR   0=inputs   PB1/D9=VSYNC
+   PORTB = 0b00000000;          // B-pins where 1=Pullups  
+
+   DDRC  = 0b00100001;          // C-pins DIR   0=inputs   PC0=Buzzer, PC4=SDA, PC5=SCL
+   PORTC = 0b00000000;          // C-pins where 1=Pullups
+
+   DDRD  = 0b11101000;          // D-pins DIR   0=inputs
    PORTD = 0b00000000;          // D-pins where 1=Pullups
+
                                  // set up the ADC
    ADCSRA &= ~PS_128;           // remove bits set by Arduino library
    ADCSRA |= PS_4;              // set our own prescaler to 4. N.B. PS_2 does not work!!!
-  
-//   Wire.begin(); //TH: To use Wii-controller
-//   Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz)
-//   Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
-//   nunchuk_init(); //TH: Init the nunchuk
+
+    // Initialize I2C library manually
+   //  I2c.begin();
+   //  I2c.timeOut(500);
+   //  I2c.pullup(false);
+  Wire.begin(); //TH: To use Wii-controller
+//  Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz)
+  Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
+  nunchuk_init(); //TH: Init the nunchuk
+            toneL(200, 30);
+            toneL(100, 30);
+            toneL(150, 50);
                                //TH:---^^^--- 
 }
 
 // ************* Variable definition ***************************************
 boolean buttonStatus = 0;
-boolean button2Status = 0; //TH: Added for sound control on/off
-int wheelPosition; 
+//boolean button2Status = 0; //TH: Added for sound control on/off
+int n; // Used temporarily for reading wheelPosition
+//int wheelPosition; 
 int padPosition; 
 int padPositionOld; 
-int PadLenght = 6; 
+const int PadLenght = 6; 
 int ballX = 70;
 int ballY = 30; 
 int ballXold;
@@ -231,14 +251,6 @@ void parameterUpdate() {
   if (speedY > 0) {speedY = cos(angle)*speedT;} else {speedY = -cos(angle)*speedT;} 
 }
 
-void toneL(int frequency, int duration) {
-//   if(snd == 1) {
-      vga.tone(frequency);
-      vga.delay(duration);
-      vga.noTone(); 
-//   }
-}
-
 void processInputs() {
    padPositionOld = padPosition;
 
@@ -248,10 +260,10 @@ void processInputs() {
       // Work with nunchuk_data
 //      nunchuk_print();
 
-      // buttonStatus = nunchuk_buttonZ();
+      buttonStatus = !(nunchuk_buttonZ()); //TH:
       // button2Status = nunchuk_buttonC();
-      // wheelPosition = nunchuk_joystickX();
-      // padPosition = map(wheelPosition, 1023, 0, 1 + PadLenght, width - 1 - PadLenght);
+      n = nunchuk_joystickX(); // Read wheelPosition
+      padPosition = map(n, 1023, 0, 1 + PadLenght, width - 1 - PadLenght);
       padPosition = width/2;
 
    // } else {
@@ -273,16 +285,17 @@ void gameIni();
 void drawBricksGrid(int n);
 
 void drawLives() {
-    vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 110, 10, 0); 
-    if(lives == 9) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str9, 110, 10, 3);}
-    if(lives == 8) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str8, 110, 10, 3);}
-    if(lives == 7) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str7, 110, 10, 3);}
-    if(lives == 6) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str6, 110, 10, 3);}
-    if(lives == 5) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str5, 110, 10, 3);}
-    if(lives == 4) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str4, 110, 10, 3);}
-    if(lives == 3) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str3, 110, 10, 3);}
-    if(lives == 2) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str2, 110, 10, 3);}
-    if(lives == 1) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str1, 110, 10, 3);}
+    const int posX = 108; //TH: new const + changed posX from 110 to 108
+    vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, posX, 10, 0); 
+    if(lives == 9) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str9, posX, 10, 3);}
+    if(lives == 8) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str8, posX, 10, 3);}
+    if(lives == 7) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str7, posX, 10, 3);}
+    if(lives == 6) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str6, posX, 10, 3);}
+    if(lives == 5) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str5, posX, 10, 3);}
+    if(lives == 4) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str4, posX, 10, 3);}
+    if(lives == 3) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str3, posX, 10, 3);}
+    if(lives == 2) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str2, posX, 10, 3);}
+    if(lives == 1) {vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str1, posX, 10, 3);}
     if(lives == 0) {gameOver();}
 }
 
@@ -337,11 +350,11 @@ void drawMenu() {
 void drawGameScreen() {
 }
 
-void drawBorder() { // ************************ total screen size: width/height = 120/60
-   vgaU.draw_line(0, 0, 0, height - 1, 3);
-   vgaU.draw_line(0, 0, width - 1, 0, 3);
-   vgaU.draw_line(0, height - 1, width - 1, height - 1, 3);
-   vgaU.draw_line(width - 1, 0, width - 1, height, 3);
+void drawBorder() { // TH:******************** total screen size: width/height = 112/60. draw_line(x0,y0,x1,y1,c)
+   vgaU.draw_line(0, 0, 0, height - 1, 3);                  // Left. c=3=White, c=2=Cyan, c=1=Red
+   vgaU.draw_line(0, 0, width - 1, 0, 3);                   // Top
+   vgaU.draw_line(0, height - 1, width - 1, height - 1, 3); // Bottom
+   vgaU.draw_line(width - 1, 0, width - 1, height, 3);      // Right
 }
 
 void drawPad() {
@@ -397,7 +410,7 @@ void drawBricksGrid(int n) {
 
 
 void searchHitBrick(int bX, int bY) { 
-   distanceX = 120;
+   distanceX = 112; //TH:Changed 120 to 112
    distanceY = 60;
    for (int i = 0; i <= int(width/(2*lenght + 3)); i++) {
       for (int j = 0; j < rowBricks; j++) {

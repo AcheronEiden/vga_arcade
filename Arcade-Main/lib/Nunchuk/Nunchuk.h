@@ -66,26 +66,26 @@ static void nunchuk_init_power() {
 static void nunchuk_init() {
 
 #ifdef NUNCHUK_DISABLE_ENCRYPTION
-    // I2C_START(NUNCHUK_ADDRESS);
-    // I2C_WRITE(0xF0); //TH: Black Nunchuk
-    // I2C_WRITE(0x55); //TH: Black Nunchuk
-    // I2C_STOP();
-    // vga2.delay(10);
-    // I2C_START(NUNCHUK_ADDRESS);
-    // I2C_WRITE(0xFB); //TH: Black Nunchuk
-    // I2C_WRITE(0x00); //TH: Black Nunchuk
-    // I2C_STOP();
-    // vga2.delay(10);
+    I2C_START(NUNCHUK_ADDRESS);
+    I2C_WRITE(0xF0); //TH: Black Nunchuk
+    I2C_WRITE(0x55); //TH: Black Nunchuk
+    I2C_STOP();
+    vga2.delay(10);
+    I2C_START(NUNCHUK_ADDRESS);
+    I2C_WRITE(0xFB); //TH: Black Nunchuk
+    I2C_WRITE(0x00); //TH: Black Nunchuk
+    I2C_STOP();
+    vga2.delay(10);
 
-    I2C_START(NUNCHUK_ADDRESS);
-    I2C_WRITE(0x40); //TH: White Nunchuk
-    I2C_WRITE(0x00); //TH: White Nunchuk
-    I2C_STOP();
-    vga2.delay(10);
-    I2C_START(NUNCHUK_ADDRESS);
-    I2C_WRITE(0x00); //TH: White Nunchuk
-    I2C_STOP();
-    vga2.delay(10);
+    // I2C_START(NUNCHUK_ADDRESS);
+    // I2C_WRITE(0x40); //TH: White Nunchuk
+    // I2C_WRITE(0x00); //TH: White Nunchuk
+    // I2C_STOP();
+    // vga2.delay(10);
+    // I2C_START(NUNCHUK_ADDRESS);
+    // I2C_WRITE(0x00); //TH: White Nunchuk
+    // I2C_STOP();
+    // vga2.delay(10);
 #else
     I2C_START(NUNCHUK_ADDRESS);
     I2C_WRITE(0x40);
