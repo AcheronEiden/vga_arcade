@@ -6,7 +6,7 @@
 */
 
 #include <avr/io.h> //TH: To set IO pins using C
-
+#include <Arduino.h> //MK
 #include <SID.h>
 
 /************************************************************************
@@ -50,126 +50,50 @@
  *   don't want to make it open source, please contact the authors for     *
  *   licensing.                                                            *
  ***************************************************************************/
-#define OFF 0
-#define SETTRIANGLE_1	4,0x11,5,0xBB,6,0xAA,
-#define C4_1	1,0x11,0,0x25,
-#define CONTROLREG 4 // SID control register address
+/*
+<!> Programmer = USBasp for arduino Nano ATmega328
+ Brian Tucker 1-5-2015
+ sid-arduino-lib:
+ https://code.google.com/p/sid-arduino-lib/
+ based SID player example program sets
+ the 25 SID/6581 registers at 50Hz (delay(19)=~50Hz) 
+ The register data is created using the excellent app
+ "SIDDumper" from the SIDCog project:
+ SIDCog:
+ http://forums.parallax.com/showthread.php/118285-SIDcog-The-sound-of-the-Commodore-64-!-%28Now-in-the-OBEX%29
+ SIDDumper:
+ http://gadgetgangster.com/scripts/displayasset.php?id=361
+ For best results use an IRQ at 50 or 60Hz and set the registers programatically.
+ For info on how to make music with the SID chip and related registers
+ I recomend the e-magazine "Commodore Hacking":
+ http://www.ffd2.com/fridge/chacking/
+ Specifically the Rob Hubbard play subroutine as that is the code
+ all serious C64 SID musicians must understand.
+ 
+ convert the dump to number with : http://www.expertsetup.com/~brian/c64/JConverter.jar / http://softcollection.sytes.net/javaprog
+ 
+*/
 
-// waveforms
-#define SETNOISE_1 	4,0x81,5,0xBB,6,0xAD, // SID register setup to create noise
+// Connect PIN 9 from your arduino Uno to audio output (+ ground to the other pin of the audio output)!
 
+#include <avr/pgmspace.h>  //used to store data in the flash rom
+#include "tone3.h" //RAW SID register data file in flash
+
+#include <SID.h>
 SID mySid;
 
-void setup() {
-  digitalWrite(13, HIGH); //turn on debugging LED
+#define LED 13
+
+void setup()  { 
   mySid.begin();
-}
+      } 
 
-/************************************************************************
-	
-    void setwaveform_noise(uint8_t channel)
-    
-    Set sid registers to create a noise waveform.
-    The SID has 3 channels, which should be accesed according to this
-    definition:
-    
-    #define CHANNEL1  0
-    #define CHANNEL2  7
-    #define CHANNEL3  14
-    
-    For noise sounds it makes sense to use only one channel, because 
-    using multiple channels gives almost no audible difference.
-    
-************************************************************************/
-void setwaveform_triangle(uint8_t channel)
-{
-  uint8_t dataset[]={ SETTRIANGLE_1 C4_1 0xFF };
-  //  uint8_t dataset[]={SETNOISE_1 C4_1 0xFF};
-  uint8_t n=0; 
-  
-  while(dataset[n]!=0xFF) 
-  {
-     mySid.set_register(channel+dataset[n], dataset[n+1]); 
-     // register address, register content
-     n+=2;
-  }
-}
-  
-  /************************************************************************
-	
-    void set_frequency(uint16_t pitch,uint8_t channel)
-    
-    Set sid frequncy registers.
-    
-    The pitch has to be:
-    
-    pitch=16.77*frequency
-    
-    The SID has 3 channels, which should be accesed according to this
-    definition:
-    
-    #define CHANNEL1  0
-    #define CHANNEL2  7
-    #define CHANNEL3  14
-    
-************************************************************************/
-// pitch=16.77*frequency
-void set_frequency(uint16_t pitch,uint8_t channel)
-{
-    mySid.set_register(channel, pitch&0xFF); // low register adress
-    mySid.set_register(channel+1, pitch>>8); // high register adress
-    }
-
-uint8_t zufall()
-{
-	static uint16_t startwert=0x0AA;
-
-	uint16_t temp;
-	uint8_t n;
-		
-	for(n=1;n<8;n++)
-	{
-		temp = startwert;
-		startwert=startwert << 1;
-	
-		temp ^= startwert;
-		if ( ( temp & 0x4000 ) == 0x4000 ) 
-		{ 
-			startwert |= 1;
-		}
-	}
-	
-	return (startwert);
-}
-    #define CHANNEL1  0
-    #define CHANNEL2  7
-    #define CHANNEL3  14
-
-/************************************************************************
-	
-    main loop
-
-    create space ship noise
-    
-************************************************************************/        
-void loop()
-{
-  uint16_t n;
-  uint8_t flag,k;
-  uint16_t soundindex=0;
-
-  
-
-  setwaveform_triangle(CHANNEL1);
-  setwaveform_triangle(CHANNEL2);
-    
-  while(1)
-  {
-    n=zufall()*8;
-    set_frequency(n*17,CHANNEL1); // change noise generator frequency
-    n=zufall()*2;
-    set_frequency(n*17,CHANNEL2); // change noise generator frequency
-
-    delay(100);
-  }
+void loop() {
+  for(uint16_t sidPointer=0;sidPointer<=sidLength;sidPointer++){
+    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+      mySid.set_register(sidRegister, (pgm_read_byte(&sidData[(sidPointer+sidRegister)])));
+    };
+    delay(19);
+    sidPointer=sidPointer+24;
+  };
 }
