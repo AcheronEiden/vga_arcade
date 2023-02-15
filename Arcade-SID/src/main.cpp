@@ -8,6 +8,11 @@
 #include <avr/io.h> //TH: To set IO pins using C
 #include <Arduino.h> //MK
 #include <SID.h>
+#include <Wire.h>
+#include <inttypes.h>
+#include <String.h>
+#include <avr/pgmspace.h>  //used to store data in the flash rom
+#include "tone3.h" //RAW SID register data file in flash
 
 /************************************************************************
 
@@ -76,15 +81,15 @@
 
 // Connect PIN 9 from your arduino Uno to audio output (+ ground to the other pin of the audio output)!
 
-#include <avr/pgmspace.h>  //used to store data in the flash rom
-#include "tone3.h" //RAW SID register data file in flash
 
-#include <SID.h>
+// https://github.com/daitangio/sid-arduino-lib/blob/master/examples/SID_I2C_receiver/SID_I2C_receiver.ino
+
 SID mySid;
 
-#define LED 13
 
-void setup()  { 
+void setup()  {
+  Wire.begin(23);                // join i2c bus with address #23
+  Wire.onReceive(receiveEvent); // register event  
   mySid.begin();
       } 
 
@@ -96,4 +101,14 @@ void loop() {
     delay(19);
     sidPointer=sidPointer+24;
   };
+}
+
+void receiveEvent(int howMany)
+{
+  while ( Wire.available()) // loop through all 
+  {
+    uint8_t reg = Wire.read(); 
+    uint8_t val = Wire.read();    
+    mySid.set_register(reg,val);        
+  }
 }
