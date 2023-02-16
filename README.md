@@ -78,7 +78,7 @@ The actual project progress are marked below:
 
 
 ## External resources
-This project uses the following public libraries as code sections in this project. The libraries are often modified to suit this project and we have made comments in the code when edits are made. In some parts of this project only smaller fractions of the public libraries are used.
+This project uses the following public libraries and also used information from external sites listed below. The libraries are often modified to suit this project and we have made comments in the code when edits are made. In some parts of this project only smaller fractions of the public libraries are used.
 
 VGAXUA Library for Arduino UNO and MEGA [https://github.com/smaffer/vgaxua](https://github.com/smaffer/vgaxua)
 
@@ -92,10 +92,22 @@ Arduino I2C master library [https://github.com/rambo/I2C](https://github.com/ram
 
 Using Nunchuk with I2C [https://www.xarg.org/2016/12/using-a-wii-nunchuk-with-arduino/](https://www.xarg.org/2016/12/using-a-wii-nunchuk-with-arduino/)
 
+Basics of the I2C Communication Protocol [https://www.circuitbasics.com/basics-of-the-i2c-communication-protocol/](https://www.circuitbasics.com/basics-of-the-i2c-communication-protocol/)
+
 Technical info about the Wii Nunchuk Interface [https://bootlin.com/labs/doc/nunchuk.pdf](https://bootlin.com/labs/doc/nunchuk.pdf)
+
+nuncha cpp-lib [https://github.com/mgalardini/nuncha/tree/master/nuncha](https://github.com/mgalardini/nuncha/tree/master/nuncha)
 
 MOS6581 SID Emulator Arduino Library [https://github.com/cybernesto/sid-arduino-lib](https://github.com/cybernesto/sid-arduino-lib)
 
 MOS6581 SID Emulator Extra examples [https://github.com/daitangio/sid-arduino-lib](https://github.com/daitangio/sid-arduino-lib)
+
+Brian Tucker sid-arduino-lib [https://code.google.com/p/sid-arduino-lib/](https://code.google.com/p/sid-arduino-lib/)
+
+SIDDumper from SIDCog project [http://forums.parallax.com/](http://forums.parallax.com/showthread.php/118285-SIDcog-The-sound-of-the-Commodore-64-!-%28Now-in-the-OBEX%29)
+
+SIDDumper from GadgetGangster [http://gadgetgangster.com/](http://gadgetgangster.com/scripts/displayasset.php?id=361)
+
+e-magazine "Commodore Hacking" [http://www.ffd2.com/fridge/chacking/](http://www.ffd2.com/fridge/chacking/)
 
 Uwe:s blogg [https://www.sciencetronics.com/greenphotons/](https://www.sciencetronics.com/greenphotons/?p=337)
