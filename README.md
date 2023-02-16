@@ -100,13 +100,13 @@ nuncha cpp-lib [https://github.com/mgalardini/nuncha/tree/master/nuncha](https:/
 
 MOS6581 SID Emulator Arduino Library [https://github.com/cybernesto/sid-arduino-lib](https://github.com/cybernesto/sid-arduino-lib)
 
-MOS6581 SID Emulator Extra examples [https://github.com/daitangio/sid-arduino-lib](https://github.com/daitangio/sid-arduino-lib)
+MOS6581 SID Emulator Extra examples MIDI [https://github.com/daitangio/sid-arduino-lib](https://github.com/daitangio/sid-arduino-lib)
 
 Brian Tucker sid-arduino-lib [https://code.google.com/p/sid-arduino-lib/](https://code.google.com/p/sid-arduino-lib/)
 
-SIDDumper from SIDCog project [http://forums.parallax.com/](http://forums.parallax.com/showthread.php/118285-SIDcog-The-sound-of-the-Commodore-64-!-%28Now-in-the-OBEX%29)
+SIDDumper from SIDCog project [https://forums.parallax.com/](https://forums.parallax.com/discussion/118285/sidcog-the-sound-of-the-commodore-64-now-in-the-obex/p1)
 
-SIDDumper from GadgetGangster [http://gadgetgangster.com/](http://gadgetgangster.com/scripts/displayasset.php?id=361)
+Tools for analyzing SID music [https://github.com/anarkiwi/desidulate](https://github.com/anarkiwi/desidulate)
 
 e-magazine "Commodore Hacking" [http://www.ffd2.com/fridge/chacking/](http://www.ffd2.com/fridge/chacking/)
 
