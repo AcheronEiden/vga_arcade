@@ -108,15 +108,23 @@ MOS6581 SID Emulator Arduino Library [https://github.com/cybernesto/sid-arduino-
 
 MOS6581 SID Emulator Extra examples MIDI [https://github.com/daitangio/sid-arduino-lib](https://github.com/daitangio/sid-arduino-lib)
 
-Brian Tucker sid-arduino-lib [https://code.google.com/p/sid-arduino-lib/](https://code.google.com/p/sid-arduino-lib/)
-
-SIDDumper from SIDCog project [https://forums.parallax.com/](https://forums.parallax.com/discussion/118285/sidcog-the-sound-of-the-commodore-64-now-in-the-obex/p1)
+SIDDumper from SIDCog project (tool missing) [https://forums.parallax.com/](https://forums.parallax.com/discussion/118285/sidcog-the-sound-of-the-commodore-64-now-in-the-obex/p1)
 
 Tools for analyzing SID music [https://github.com/anarkiwi/desidulate](https://github.com/anarkiwi/desidulate)
+
+ChiptuneSAK github [https://github.com/c64cryptoboy/ChiptuneSAK](https://github.com/c64cryptoboy/ChiptuneSAK)
+
+High Voltage SID Collection, 56665 songs [https://hvsc.c64.org/](https://hvsc.c64.org/)
 
 e-magazine "Commodore Hacking" [http://www.ffd2.com/fridge/chacking/](http://www.ffd2.com/fridge/chacking/)
 
 midicsv [https://pypi.org/project/py-midicsv/](https://pypi.org/project/py-midicsv/)
+
+Commodore SID Music, ChiptuneSAK [https://chiptunesak.readthedocs.io/en/latest/sid.html](https://chiptunesak.readthedocs.io/en/latest/sid.html)
+
+SID file format description [https://www.hvsc.c64.org/download/C64Music/DOCUMENTS/SID_file_format.txt](https://www.hvsc.c64.org/download/C64Music/DOCUMENTS/SID_file_format.txt)
+
+MOS Technology 6581 wikipage [https://en.wikipedia.org/wiki/MOS_Technology_6581](https://en.wikipedia.org/wiki/MOS_Technology_6581)
 
 ## Uwe references
 Uwe:s blogg [https://www.sciencetronics.com/greenphotons/](https://www.sciencetronics.com/greenphotons/?p=337)
