@@ -116,5 +116,7 @@ Tools for analyzing SID music [https://github.com/anarkiwi/desidulate](https://g
 
 e-magazine "Commodore Hacking" [http://www.ffd2.com/fridge/chacking/](http://www.ffd2.com/fridge/chacking/)
 
+midicsv [https://pypi.org/project/py-midicsv/](https://pypi.org/project/py-midicsv/)
+
 ## Uwe references
 Uwe:s blogg [https://www.sciencetronics.com/greenphotons/](https://www.sciencetronics.com/greenphotons/?p=337)
