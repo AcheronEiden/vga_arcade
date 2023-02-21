@@ -57,8 +57,9 @@ GND and +3.3V is also connected to the Wii-controller.
 
 ## Milestones / Progress
 The project milestones:
-- [x] Get a stable VGA image on a TFT-screen using PWM.
-- [x] Use an analog potentiometer to control the game paddle.
+- [x] Get a stable VGA image on a TFT-screen using GPIO/timers/PWM/interrupts.
+- [x] Use an analog potentiometer to control the game paddle (abandoned).
+- [ ] Use an analog potentiometer for volume using ADC + OSD display.
 - [x] Moving bouncing ball in a playable game.
 - [ ] Use a Wii-nunchuk (I2C) to control the game paddle.
 - [ ] Create advanced music and sfx using a secondary Arduino.
@@ -71,31 +72,59 @@ The actual project progress are marked below:
 - [x] Code adjustment for C++ syntax.
 - [x] Prototype hardware constructed and assembled.
 - [x] Both ordinary buttons are now active low with internal pull-ups.
-- [ ] Simple buzzer sound effects mute function.
-- [ ] Blue VGA-line connected to green. TODO: Improve VGAX to use more colors.
-- [ ] Wii-nunchuk routine will be created.
-- [ ] SID Music and sound effects using an slave Atmel 328P. :slightly_smiling_face:
+- [x] Simple buzzer sound effects.
+- [ ] Wii-nunchuk routine that can coexist with VGA timing.
+- [ ] SID Music and sound effects using an slave Atmel 328P.
+- [ ] Music controlled using I2C.
+- [ ] OSD-display for volume knob using ADC.
 
 
-## External resources
-This project uses the following public libraries as code sections in this project. The libraries are often modified to suit this project and we have made comments in the code when edits are made. In some parts of this project only smaller fractions of the public libraries are used.
+# External resources
+This project uses the following public libraries and also used information from external sites listed below. The libraries are often modified to suit this project and we have made comments in the code when edits are made. In some parts of this project only smaller fractions of the public libraries are used.
 
+## VGA references
 VGAXUA Library for Arduino UNO and MEGA [https://github.com/smaffer/vgaxua](https://github.com/smaffer/vgaxua)
 
 Electrical connections for VGA-cable [https://forum.arduino.cc/t/vga-library-for-arduino-uno-and-atmega328/308936](https://forum.arduino.cc/t/vga-library-for-arduino-uno-and-atmega328/308936)
 
 VGA Breakout With Arduino Uno [https://www.instructables.com/VGA-Breakout-With-Arduino-Uno/](https://www.instructables.com/VGA-Breakout-With-Arduino-Uno/)
 
+## Nunchuk references
 Wii-Nunchuk communication [https://github.com/infusion/Fritzing](https://github.com/infusion/Fritzing)
-
-Arduino I2C master library [https://github.com/rambo/I2C](https://github.com/rambo/I2C)
 
 Using Nunchuk with I2C [https://www.xarg.org/2016/12/using-a-wii-nunchuk-with-arduino/](https://www.xarg.org/2016/12/using-a-wii-nunchuk-with-arduino/)
 
 Technical info about the Wii Nunchuk Interface [https://bootlin.com/labs/doc/nunchuk.pdf](https://bootlin.com/labs/doc/nunchuk.pdf)
 
+nuncha cpp-lib [https://github.com/mgalardini/nuncha/tree/master/nuncha](https://github.com/mgalardini/nuncha/tree/master/nuncha)
+
+## I2C references
+Arduino I2C master library [https://github.com/rambo/I2C](https://github.com/rambo/I2C)
+
+Basics of the I2C Communication Protocol [https://www.circuitbasics.com/basics-of-the-i2c-communication-protocol/](https://www.circuitbasics.com/basics-of-the-i2c-communication-protocol/)
+
+## SID references
 MOS6581 SID Emulator Arduino Library [https://github.com/cybernesto/sid-arduino-lib](https://github.com/cybernesto/sid-arduino-lib)
 
-MOS6581 SID Emulator Extra examples [https://github.com/daitangio/sid-arduino-lib](https://github.com/daitangio/sid-arduino-lib)
+MOS6581 SID Emulator Extra examples MIDI [https://github.com/daitangio/sid-arduino-lib](https://github.com/daitangio/sid-arduino-lib)
 
+SIDDumper from SIDCog project (tool missing) [https://forums.parallax.com/](https://forums.parallax.com/discussion/118285/sidcog-the-sound-of-the-commodore-64-now-in-the-obex/p1)
+
+Tools for analyzing SID music [https://github.com/anarkiwi/desidulate](https://github.com/anarkiwi/desidulate)
+
+ChiptuneSAK github [https://github.com/c64cryptoboy/ChiptuneSAK](https://github.com/c64cryptoboy/ChiptuneSAK)
+
+High Voltage SID Collection, 56665 songs [https://hvsc.c64.org/](https://hvsc.c64.org/)
+
+e-magazine "Commodore Hacking" [http://www.ffd2.com/fridge/chacking/](http://www.ffd2.com/fridge/chacking/)
+
+midicsv [https://pypi.org/project/py-midicsv/](https://pypi.org/project/py-midicsv/)
+
+Commodore SID Music, ChiptuneSAK [https://chiptunesak.readthedocs.io/en/latest/sid.html](https://chiptunesak.readthedocs.io/en/latest/sid.html)
+
+SID file format description [https://www.hvsc.c64.org/download/C64Music/DOCUMENTS/SID_file_format.txt](https://www.hvsc.c64.org/download/C64Music/DOCUMENTS/SID_file_format.txt)
+
+MOS Technology 6581 wikipage [https://en.wikipedia.org/wiki/MOS_Technology_6581](https://en.wikipedia.org/wiki/MOS_Technology_6581)
+
+## Uwe references
 Uwe:s blogg [https://www.sciencetronics.com/greenphotons/](https://www.sciencetronics.com/greenphotons/?p=337)
