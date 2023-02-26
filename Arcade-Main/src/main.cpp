@@ -192,7 +192,7 @@ void processInputs() {
    // uint8_t first_byte_method2 = data_ptr[0]; // get the first byte of the array
 
       //TH: get the Nunchuk data
-//      uint8_t* nunchuk_data_ptr = TheNunchuk.getNunChukData();
+     uint8_t* nunchuk_data_ptr = TheNunchuk.getNunChukData();
 
       //TH: access the data using pointer arithmetic
 //      buttonStatus = (nunchuk_data_ptr[5]) & 1; // button z
@@ -205,11 +205,11 @@ void processInputs() {
       // uint8_t button_c = (*(data + 5) >> 1) & 1;
 
 //      if (nunchuk_read()) {
-//         buttonStatus = (nunchuk_buttonZ()); //TH: Button Z to start ball
+      //   buttonStatus = (nunchuk_buttonZ()); //TH: Button Z to start ball
          // buttonStatus = 1;
 
 //         button2Status = nunchuk_buttonC(); //TH:
-      // buttonStatus = myData.nunchuk_data[6];
+      buttonStatus = !((nunchuk_data_ptr[5]) & 1);
 //         n = nunchuk_joystickX(); // Read wheelPosition
          //n = nunchuk_accelX();
          //Serial.println(n);
