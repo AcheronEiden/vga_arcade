@@ -161,8 +161,8 @@ void setup() {
 
    //TH: Init Nunchuk
    Wire.begin(); //TH: To use Wii-controller
-//    Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz)
-   Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
+   Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz)
+   // Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
    TheNunchuk.nunchuk_init(); //TH: Init the nunchuk
 
                                //TH:---^^^--- 

@@ -13,6 +13,7 @@
 #include <avr/io.h> //TH: To set IO pins using C
 //#include <MyNunchuk.h> //TH: External data structure to share Nunchuk data
 #include <Nunchuk.h> //TH: To use Wii-controller, uses ?B RAM
+NunChukData TheVGANunchuk; // create an instance called 'TheVGANunchuk' of the class 'NunChukData'.
 
 //HSYNC pin used by TIMER2
 #if defined(__AVR_ATmega2560__)
@@ -64,8 +65,9 @@ ISR(TIMER1_OVF_vect) {
   rlinecnt=0; //TH:Reset Rasterline counter?
 
   no1 += 1; //TH: Delay before reading Nunchuk
-  if (no1 >5) {
+  if (no1 >250) {
     no1 = 0;
+    TheVGANunchuk.nunchuk_read();
 //    if (nunchuk_read()) {
 //      no1 = (nunchuk_buttonZ()); //TH: Button Z to start ball
 //         button2Status = nunchuk_buttonC(); //TH:

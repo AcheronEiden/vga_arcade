@@ -80,27 +80,32 @@ public:
         I2C_STOP();
         mydelay();
 
-        // I2C_START(NUNCHUK_ADDRESS);
-        // I2C_WRITE(0x40); //TH: White Nunchuk 0x40
-        // I2C_WRITE(0x00); //TH: White Nunchuk 0x00
-        // I2C_STOP();
-        // vga2.delay(1);
-        // I2C_START(NUNCHUK_ADDRESS);
-        // I2C_WRITE(0x00); //TH: White Nunchuk
-        // I2C_STOP();
-        // vga2.delay(1);
+        I2C_START(NUNCHUK_ADDRESS); // Is this wrong? Encryption?
+        I2C_WRITE(0x40); //TH: White Nunchuk 0x40
+        I2C_WRITE(0x00); //TH: White Nunchuk 0x00
+        I2C_STOP();
+        mydelay();
+
+        I2C_START(NUNCHUK_ADDRESS);
+        I2C_WRITE(0x00); //TH: White Nunchuk
+        I2C_STOP();
+        mydelay();
     }
 
     // Read a full chunk of data from Nunchuk. @return A boolean if the data transfer was successful
     uint8_t nunchuk_read() {
+uint16_t no1 = 0; // Used as nameless temp-var to save RAM. (small loops, reading wheelPosition)
         uint8_t i;
         Wire.requestFrom(NUNCHUK_ADDRESS, 6);
         for (i = 0; i < 6 && Wire.available(); i++) {
-            nunchuk_data[i] = I2C_READ();
+            // nunchuk_data[i] = I2C_READ();
         }
+        mydelay();
         I2C_START(NUNCHUK_ADDRESS);
         I2C_WRITE(0x00);
         I2C_STOP();
+        mydelay();
+
         return i == 6;
     }
 
