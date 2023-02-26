@@ -18,13 +18,32 @@ Also declare
 #ifndef MYNUNCHUK_H
 #define MYNUNCHUK_H
 
-// Define data structure
-struct MyNunchukd_data {
-    uint8_t nunchuk_data[6];
-//    uint8_t nunchuk_cali[16];
-};
+/*
+The extern keyword is used to declare a variable or function that is defined in a different translation unit or file.
 
-// Define variable as external
-extern struct MyNunchukd_data myData;
+When you declare a variable or function as extern, you are telling the compiler that the definition of that variable or function is located elsewhere, and that the compiler should not reserve any memory for it or generate any code for it. Instead, it is the linker's responsibility to find the definition of the variable or function and link it with the rest of the program.
+
+In the case of extern uint8_t nunchuk_data[6];, the extern keyword is telling the compiler that the definition of the variable nunchuk_data is located in another translation unit, and that the linker should be responsible for resolving the reference to this variable.
+*/
+extern uint8_t nunchuk_data[6];
+    // uint8_t nunchuk_data[6] = {}; //TH:(globally accessible) array of Nunchuk data
+
+// // Define data structure
+// struct MyNunchukd_data {
+//     uint8_t nunchuk_data[6];
+// //    uint8_t nunchuk_cali[16];
+// };
+
+// // Define variable as external
+// extern struct MyNunchukd_data myData;
 
 #endif
+
+// // data.h
+
+// #ifndef DATA_H
+// #define DATA_H
+
+// extern uint8_t nunchuk_data[6];
+
+// #endif

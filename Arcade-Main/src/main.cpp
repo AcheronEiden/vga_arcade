@@ -6,11 +6,15 @@
 */
 
 #include <avr/io.h> //TH: To set IO pins using C
-//#include <MyNunchuk.h> //TH:Switched to external struct
+#include <MyNunchuk.h> //TH: External data structure to share Nunchuk data
 //#include <Nunchuck.h> //TH: To use Wii-controller, uses ?B RAM
 #include <Nunchuk.h> //TH: To use Wii-controller, uses 35B RAM
 //#include <Wire.h> //TH: To use Wii-controller, uses 182B RAM
 //#include <I2C.h> //TH: To use Wii-controller, uses 2059-1884B= 175B RAM
+//TH: Setup Nunchuk data structure
+uint8_t nunchuk_data[6] = {};
+NunChukData TheNunchuk; // create an instance called 'TheNunchuk' of the class 'NunChukData'.
+//uint8_t* nunchuk_data_ptr = TheNunchuk.getNunChukData(); //TH: get a pointer to the array (NOT NEEDED WHEN USING "MyNunchuk.h")
 
 #include <VGAX.h>
 #include <math.h>
@@ -60,9 +64,6 @@ boolean button2Status = 0; //TH: Added for sound control on/off
 int n; //TH: Used as nameless temp-var to save RAM. (small loops, reading wheelPosition)
 int m = 0; //TH: Used to skip calls to nunchuk read to save process time
 char s[]="000";
-//TH: Setup Nunchuk data structure
-NunChukData nunchuk; // create an instance called 'nunchuk' of the class 'NunChukData'.
-uint8_t* nunchuk_data_ptr = nunchuk.getNunChukData(); //TH: get a pointer to the array
 
 //int wheelPosition; 
 int padPosition; 
@@ -100,11 +101,8 @@ int nBricks = 0;
 int color; 
 const float speedIncrement = 1.25992105; 
 int beginning = 0; 
-//int snd = 0; //TH: 0=No sound, 1=Sound on
-//int sndwait = 1; //TH: 1=Sound toggled, waiting for release of button
-//extern struct MyNunchukd_data myData; //TH: Define external data structure for Nunchuk data
 
-
+//--- SOUND ------------------------------------------
 void toneL(int frequency, int duration) {
    if (1==1) { //TH: Mute if wanted
       vga.tone(frequency);
@@ -165,7 +163,7 @@ void setup() {
    Wire.begin(); //TH: To use Wii-controller
 //    Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz)
    Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
-   nunchuk.nunchuk_init(); //TH: Init the nunchuk
+   TheNunchuk.nunchuk_init(); //TH: Init the nunchuk
 
                                //TH:---^^^--- 
 }
@@ -177,6 +175,8 @@ void parameterUpdate() {
 }
 
 void processInputs() {
+//   NunChukData TheNunchuk; // create an instance called 'TheNunchuk' of the class 'NunChukData'.
+
    padPositionOld = padPosition;
 
    //TH: Use Wii-controller if present, otherwise use analog potentiometer
@@ -185,24 +185,31 @@ void processInputs() {
 
    if (m>500) {
 
+   // NunChukData nunchuk; // create an instance called 'nunchuk' of the class 'NunChukData'.
+   // uint8_t* nunchuk_data_ptr = nunchuk.getNunChukData(); // get a pointer to the array
+   // uint8_t first_byte_method1 = *data_ptr; // get the first byte of the array
+   // uint8_t second_byte_method1 = *(data_ptr + 1); // get the second byte of the array
+   // uint8_t first_byte_method2 = data_ptr[0]; // get the first byte of the array
 
       //TH: get the Nunchuk data
-      long* data = nunchuk.getNunChukData();
+//      uint8_t* nunchuk_data_ptr = TheNunchuk.getNunChukData();
 
       //TH: access the data using pointer arithmetic
+//      buttonStatus = (nunchuk_data_ptr[5]) & 1; // button z
       // uint8_t joy_x = *(data + 0);
       // uint8_t joy_y = *(data + 1);
       // uint8_t accel_x = *(data + 2);
       // uint8_t accel_y = *(data + 3);
       // uint8_t accel_z = *(data + 4);
-      uint8_t button_z = (*(data + 5) >> 0) & 1;
+      // uint8_t button_z = (*(data + 5) >> 0) & 1;
       // uint8_t button_c = (*(data + 5) >> 1) & 1;
 
 //      if (nunchuk_read()) {
 //         buttonStatus = (nunchuk_buttonZ()); //TH: Button Z to start ball
-buttonStatus = button_z;
+         // buttonStatus = 1;
+
 //         button2Status = nunchuk_buttonC(); //TH:
-//      buttonStatus = myData.nunchuk_data[6]
+      // buttonStatus = myData.nunchuk_data[6];
 //         n = nunchuk_joystickX(); // Read wheelPosition
          //n = nunchuk_accelX();
          //Serial.println(n);

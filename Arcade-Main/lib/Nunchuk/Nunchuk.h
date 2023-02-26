@@ -10,7 +10,7 @@
 #define NUNCHUK_H
 
 #include <Wire.h> //TH: To use Wii-controller, uses 182B RAM
-//#include <MyNunchuk.h> //TH:Switched to external struct
+#include <MyNunchuk.h> //TH: External data structure to share Nunchuk data
 //#include <math.h> //TH: fixes error: 'atan2' was not declared in this scope
 //#include <VGAX.h> //TH: To use the VGA delay-routine
 //VGAX vga2; //TH: To use the VGA delay-routine
@@ -59,7 +59,7 @@
 // };
 
 //TH:---vvv--- A public class to be able to pass data between different cpp-files
-uint8_t nunchuk_data[6] = {}; //TH:(globally accessible) array of Nunchuk data
+//uint8_t nunchuk_data[6] = {}; //TH:(globally accessible) array of Nunchuk data
 
 class NunChukData {
 public:
