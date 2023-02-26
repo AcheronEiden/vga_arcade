@@ -108,6 +108,8 @@ MOS6581 SID Emulator Arduino Library [https://github.com/cybernesto/sid-arduino-
 
 MOS6581 SID Emulator Extra examples MIDI [https://github.com/daitangio/sid-arduino-lib](https://github.com/daitangio/sid-arduino-lib)
 
+SIDDump github [https://github.com/munshkr/siddump](https://github.com/munshkr/siddump)
+
 SIDDumper from SIDCog project (tool missing) [https://forums.parallax.com/](https://forums.parallax.com/discussion/118285/sidcog-the-sound-of-the-commodore-64-now-in-the-obex/p1)
 
 Tools for analyzing SID music [https://github.com/anarkiwi/desidulate](https://github.com/anarkiwi/desidulate)
