@@ -1,135 +1,27 @@
 /*
- VGA Arcade - Version 20230212
+ VGA Arcade [main.cpp] - for 1TE663 project - Version 20230224
 
- CHANGES 2022-12-21 -- 2023-0?-?? FOR 1TE663 PROJECT.
+ Based on "Arduino Breakout for VGAx" by Roberto Melzi.
  CHANGES BY TOBIAS HOLM (/TH:) AND MOHAMMED NOUR KAMALMAZ (/MK:)
 */
 
 #include <avr/io.h> //TH: To set IO pins using C
+//#include <MyNunchuk.h> //TH:Switched to external struct
+//#include <Nunchuck.h> //TH: To use Wii-controller, uses ?B RAM
 #include <Nunchuk.h> //TH: To use Wii-controller, uses 35B RAM
-#include <Wire.h> //TH: To use Wii-controller, uses 182B RAM
+//#include <Wire.h> //TH: To use Wii-controller, uses 182B RAM
 //#include <I2C.h> //TH: To use Wii-controller, uses 2059-1884B= 175B RAM
 
-
-/********************************************
- * Arduino Breakout                         *
- * for VGAx                                 *
- *                                          *
- * Roberto Melzi - October the 2nd 2016     *
- *                                          *
- * Version 1.0                              *
- *                                          *
- ********************************************/
- 
 #include <VGAX.h>
 #include <math.h>
 #define FNT_NANOFONT_HEIGHT 6
 #define FNT_NANOFONT_SYMBOLS_COUNT 95
+#include <VGAFont4x6.h>
 #include <VGAXUtils.h>
 
 VGAX vga;
 VGAXUtils vgaU;
-
-//data size=570 bytes
-const unsigned char fnt_nanofont_data[FNT_NANOFONT_SYMBOLS_COUNT][1+FNT_NANOFONT_HEIGHT] PROGMEM={
-{ 1, 128, 128, 128, 0, 128, 0, }, //glyph '!' code=0
-{ 3, 160, 160, 0, 0, 0, 0, }, //glyph '"' code=1
-//{ 5, 80, 248, 80, 248, 80, 0, },  //glyph '#' code=2
-{ 5, 240, 240, 240, 240, 240, 240, },  //glyph '#' = 'full rectangle' code=2
-{ 3, 80, 32, 112, 112, 32, 0, },  //glyph '$' = 'bomb' code=3
-{ 5, 32, 40, 120, 240, 32, 32, },  //glyph '%' = 'planeL' code=4
-{ 5, 96, 144, 104, 144, 104, 0, },  //glyph '&' code=5
-{ 2, 128, 64, 0, 0, 0, 0, },  //glyph ''' code=6
-{ 2, 64, 128, 128, 128, 64, 0, }, //glyph '(' code=7
-{ 2, 128, 64, 64, 64, 128, 0, },  //glyph ')' code=8
-{ 3, 0, 160, 64, 160, 0, 0, },  //glyph '*' code=9
-{ 3, 0, 64, 224, 64, 0, 0, }, //glyph '+' code=10
-{ 2, 0, 0, 0, 0, 128, 64, },  //glyph ',' code=11
-{ 3, 0, 0, 224, 0, 0, 0, }, //glyph '-' code=12
-{ 1, 0, 0, 0, 0, 128, 0, }, //glyph '.' code=13
-{ 5, 8, 16, 32, 64, 128, 0, },  //glyph '/' code=14
-{ 4, 96, 144, 144, 144, 96, 0, }, //glyph '0' code=15
-{ 3, 64, 192, 64, 64, 224, 0, },  //glyph '1' code=16
-{ 4, 224, 16, 96, 128, 240, 0, }, //glyph '2' code=17
-{ 4, 224, 16, 96, 16, 224, 0, },  //glyph '3' code=18
-{ 4, 144, 144, 240, 16, 16, 0, }, //glyph '4' code=19
-{ 4, 240, 128, 224, 16, 224, 0, },  //glyph '5' code=20
-{ 4, 96, 128, 224, 144, 96, 0, }, //glyph '6' code=21
-{ 4, 240, 16, 32, 64, 64, 0, }, //glyph '7' code=22
-{ 4, 96, 144, 96, 144, 96, 0, },  //glyph '8' code=23
-{ 4, 96, 144, 112, 16, 96, 0, },  //glyph '9' code=24
-{ 1, 0, 128, 0, 128, 0, 0, }, //glyph ':' code=25
-{ 2, 0, 128, 0, 0, 128, 64, },  //glyph ';' code=26
-{ 3, 32, 64, 128, 64, 32, 0, }, //glyph '<' code=27
-{ 3, 0, 224, 0, 224, 0, 0, }, //glyph '=' code=28
-{ 3, 128, 64, 32, 64, 128, 0, },  //glyph '>' code=29
-{ 4, 224, 16, 96, 0, 64, 0, },  //glyph '?' code=30
-{ 4, 96, 144, 176, 128, 112, 0, },  //glyph '@' code=31
-{ 4, 96, 144, 240, 144, 144, 0, },  //glyph 'A' code=32
-{ 4, 224, 144, 224, 144, 224, 0, }, //glyph 'B' code=33
-{ 4, 112, 128, 128, 128, 112, 0, }, //glyph 'C' code=34
-{ 4, 224, 144, 144, 144, 224, 0, }, //glyph 'D' code=35
-{ 4, 240, 128, 224, 128, 240, 0, }, //glyph 'E' code=36
-{ 4, 240, 128, 224, 128, 128, 0, }, //glyph 'F' code=37
-{ 4, 112, 128, 176, 144, 112, 0, }, //glyph 'G' code=38
-{ 4, 144, 144, 240, 144, 144, 0, }, //glyph 'H' code=39
-{ 3, 224, 64, 64, 64, 224, 0, },  //glyph 'I' code=40
-{ 4, 240, 16, 16, 144, 96, 0, },  //glyph 'J' code=41
-{ 4, 144, 160, 192, 160, 144, 0, }, //glyph 'K' code=42
-{ 4, 128, 128, 128, 128, 240, 0, }, //glyph 'L' code=43
-{ 5, 136, 216, 168, 136, 136, 0, }, //glyph 'M' code=44
-{ 4, 144, 208, 176, 144, 144, 0, }, //glyph 'N' code=45
-{ 4, 96, 144, 144, 144, 96, 0, }, //glyph 'O' code=46
-{ 4, 224, 144, 224, 128, 128, 0, }, //glyph 'P' code=47
-{ 4, 96, 144, 144, 144, 96, 16, },  //glyph 'Q' code=48
-{ 4, 224, 144, 224, 160, 144, 0, }, //glyph 'R' code=49
-{ 4, 112, 128, 96, 16, 224, 0, }, //glyph 'S' code=50
-{ 3, 224, 64, 64, 64, 64, 0, }, //glyph 'T' code=51
-{ 4, 144, 144, 144, 144, 96, 0, },  //glyph 'U' code=52
-{ 3, 160, 160, 160, 160, 64, 0, },  //glyph 'V' code=53
-{ 5, 136, 168, 168, 168, 80, 0, },  //glyph 'W' code=54
-{ 4, 144, 144, 96, 144, 144, 0, },  //glyph 'X' code=55
-{ 3, 160, 160, 64, 64, 64, 0, },  //glyph 'Y' code=56
-{ 4, 240, 16, 96, 128, 240, 0, }, //glyph 'Z' code=57
-{ 2, 192, 128, 128, 128, 192, 0, }, //glyph '[' code=58
-{ 5, 128, 64, 32, 16, 8, 0, },  //glyph '\' code=59
-{ 2, 192, 64, 64, 64, 192, 0, },  //glyph ']' code=60
-{ 5, 32, 80, 136, 0, 0, 0, }, //glyph '^' code=61
-{ 4, 0, 0, 0, 0, 240, 0, }, //glyph '_' code=62
-{ 2, 128, 64, 0, 0, 0, 0, },  //glyph '`' code=63
-{ 3, 0, 224, 32, 224, 224, 0, },  //glyph 'a' code=64
-{ 3, 128, 224, 160, 160, 224, 0, }, //glyph 'b' code=65
-{ 3, 0, 224, 128, 128, 224, 0, }, //glyph 'c' code=66
-{ 3, 32, 224, 160, 160, 224, 0, },  //glyph 'd' code=67
-{ 3, 0, 224, 224, 128, 224, 0, }, //glyph 'e' code=68
-{ 2, 64, 128, 192, 128, 128, 0, },  //glyph 'f' code=69
-{ 3, 0, 224, 160, 224, 32, 224, },  //glyph 'g' code=70
-{ 3, 128, 224, 160, 160, 160, 0, }, //glyph 'h' code=71
-{ 1, 128, 0, 128, 128, 128, 0, }, //glyph 'i' code=72
-{ 2, 0, 192, 64, 64, 64, 128, },  //glyph 'j' code=73
-{ 3, 128, 160, 192, 160, 160, 0, }, //glyph 'k' code=74
-{ 1, 128, 128, 128, 128, 128, 0, }, //glyph 'l' code=75
-{ 5, 0, 248, 168, 168, 168, 0, }, //glyph 'm' code=76
-{ 3, 0, 224, 160, 160, 160, 0, }, //glyph 'n' code=77
-{ 3, 0, 224, 160, 160, 224, 0, }, //glyph 'o' code=78
-{ 3, 0, 224, 160, 160, 224, 128, }, //glyph 'p' code=79
-{ 3, 0, 224, 160, 160, 224, 32, },  //glyph 'q' code=80
-{ 3, 0, 224, 128, 128, 128, 0, }, //glyph 'r' code=81
-{ 2, 0, 192, 128, 64, 192, 0, },  //glyph 's' code=82
-{ 3, 64, 224, 64, 64, 64, 0, }, //glyph 't' code=83
-{ 3, 0, 160, 160, 160, 224, 0, }, //glyph 'u' code=84
-{ 3, 0, 160, 160, 160, 64, 0, },  //glyph 'v' code=85
-{ 5, 0, 168, 168, 168, 80, 0, },  //glyph 'w' code=86
-{ 3, 0, 160, 64, 160, 160, 0, },  //glyph 'x' code=87
-{ 3, 0, 160, 160, 224, 32, 224, },  //glyph 'y' code=88
-{ 2, 0, 192, 64, 128, 192, 0, },  //glyph 'z' code=89
-{ 3, 96, 64, 192, 64, 96, 0, }, //glyph '{' code=90
-{ 1, 128, 128, 128, 128, 128, 0, }, //glyph '|' code=91
-{ 3, 192, 64, 96, 64, 192, 0, },  //glyph '}' code=92
-{ 3, 96, 192, 0, 0, 0, 0, },  //glyph '~' code=93
-{ 4, 48, 64, 224, 64, 240, 0, },  //glyph '£' code=94
-};
-
+//TH: Removed font to a separate file to make this source code easier to read.
 static const char str0[] PROGMEM="0"; 
 static const char str1[] PROGMEM="1"; 
 static const char str2[] PROGMEM="2"; 
@@ -149,7 +41,7 @@ static const char str17[] PROGMEM="1TE663";     //TH:
 static const char str18[] PROGMEM="Game Over!!!"; 
 
 #define BUTTON_PIN A2          //TH: Digital A2 (Button on prototype board closest to "T 10")
-#define SOUND_PIN A4           //TH: Digital A4 (Button on prototype board closest to "T 0")
+//#define SOUND_PIN A4           //TH: Digital A4 (Button on prototype board closest to "T 0")
 #define WHEEL_PIN 3            //TH: Analog
 
                                //TH:---vvv---
@@ -162,50 +54,16 @@ const unsigned char PS_32 = (1 << ADPS2) | (1 << ADPS0);
 const unsigned char PS_64 = (1 << ADPS2) | (1 << ADPS1);
 const unsigned char PS_128 = (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
                                //TH:---^^^--- 
-void toneL(int frequency, int duration) {
-//   if(snd == 1) {
-      vga.tone(frequency);
-      vga.delay(duration);
-      vga.noTone(); 
-//   }
-}
-
-
-void setup() {
-
-   vga.begin();
-   randomSeed(1);               //TH:---vvv---
-   DDRB  = 0b00000010;          // B-pins DIR   0=inputs   PB1/D9=VSYNC
-   PORTB = 0b00000000;          // B-pins where 1=Pullups  
-
-   DDRC  = 0b00100001;          // C-pins DIR   0=inputs   PC0=Buzzer, PC4=SDA, PC5=SCL
-   PORTC = 0b00000000;          // C-pins where 1=Pullups
-
-   DDRD  = 0b11101000;          // D-pins DIR   0=inputs
-   PORTD = 0b00000000;          // D-pins where 1=Pullups
-
-                                 // set up the ADC
-   ADCSRA &= ~PS_128;           // remove bits set by Arduino library
-   ADCSRA |= PS_4;              // set our own prescaler to 4. N.B. PS_2 does not work!!!
-
-    // Initialize I2C library manually
-   //  I2c.begin();
-   //  I2c.timeOut(500);
-   //  I2c.pullup(false);
-  Wire.begin(); //TH: To use Wii-controller
-//  Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz)
-  Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
-  nunchuk_init(); //TH: Init the nunchuk
-            toneL(200, 30);
-            toneL(100, 30);
-            toneL(150, 50);
-                               //TH:---^^^--- 
-}
-
 // ************* Variable definition ***************************************
 boolean buttonStatus = 0;
-//boolean button2Status = 0; //TH: Added for sound control on/off
-int n; // Used temporarily for reading wheelPosition
+boolean button2Status = 0; //TH: Added for sound control on/off
+int n; //TH: Used as nameless temp-var to save RAM. (small loops, reading wheelPosition)
+int m = 0; //TH: Used to skip calls to nunchuk read to save process time
+char s[]="000";
+//TH: Setup Nunchuk data structure
+NunChukData nunchuk; // create an instance called 'nunchuk' of the class 'NunChukData'.
+uint8_t* nunchuk_data_ptr = nunchuk.getNunChukData(); //TH: get a pointer to the array
+
 //int wheelPosition; 
 int padPosition; 
 int padPositionOld; 
@@ -244,6 +102,73 @@ const float speedIncrement = 1.25992105;
 int beginning = 0; 
 //int snd = 0; //TH: 0=No sound, 1=Sound on
 //int sndwait = 1; //TH: 1=Sound toggled, waiting for release of button
+//extern struct MyNunchukd_data myData; //TH: Define external data structure for Nunchuk data
+
+
+void toneL(int frequency, int duration) {
+   if (1==1) { //TH: Mute if wanted
+      vga.tone(frequency);
+      vga.delay(duration);
+      vga.noTone();
+   }
+}
+
+void setup() {
+   DDRB  = 0b00000011;          // B-pins DIR   0=inputs   PB1/D9=VSYNC, D8=VSYNC MONITOR
+   PORTB = 0b00000001;          // B-pins where 1=Pullups  
+
+   DDRC  = 0b00110001;          // C-pins DIR   0=inputs   PC0=Buzzer, PC4=SDA, PC5=SCL
+   PORTC = 0b00000000;          // C-pins where 1=Pullups
+// PINC; // C-pins reads value
+
+   DDRD  = 0b11101000;          // D-pins DIR   0=inputs   D3=HSYNC, D6-D7=R+G
+   PORTD = 0b00000000;          // D-pins where 1=Pullups
+
+                                 // set up the ADC
+   ADCSRA &= ~PS_128;           // remove bits set by Arduino library
+   ADCSRA |= PS_4;              // set our own prescaler to 4. N.B. PS_2 does not work!!!
+
+   vga.begin();
+   randomSeed(1);               //TH:---vvv--- Using gcc-variables
+
+   //TH: Test if I2C are reacting
+//    for (n = 1; n < 200; ++n) {
+//       PORTC &= 0b11101111; // AND to zero bit 4 (SDA)
+// //      PORTC = (0b00010000 << 1);
+// //      PORTB = 1 ; // Red   00000001
+//       vga.delay(10);
+//    }
+
+    // Initialize I2C library manually
+   //  I2c.begin();
+   //  I2c.timeOut(500);
+   //  I2c.pullup(false);
+// vga.tone(500);
+// vga.delay(500);
+// vga.tone(1600);
+// vga.delay(500);
+
+// toneL(200, 300);
+// toneL(100, 300);
+// toneL(150, 500);
+
+//Serial.begin(115200);
+
+   //TH: Setup and init Nunchuk
+   // NunChukData nunchuk; // create an instance called 'nunchuk' of the class 'NunChukData'.
+   // uint8_t* nunchuk_data_ptr = nunchuk.getNunChukData(); // get a pointer to the array
+   // uint8_t first_byte_method1 = *data_ptr; // get the first byte of the array
+   // uint8_t second_byte_method1 = *(data_ptr + 1); // get the second byte of the array
+   // uint8_t first_byte_method2 = data_ptr[0]; // get the first byte of the array
+
+   //TH: Init Nunchuk
+   Wire.begin(); //TH: To use Wii-controller
+//    Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz)
+   Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
+   nunchuk.nunchuk_init(); //TH: Init the nunchuk
+
+                               //TH:---^^^--- 
+}
 
 void parameterUpdate() {
   angle = angleDeg/180* pi; 
@@ -255,23 +180,56 @@ void processInputs() {
    padPositionOld = padPosition;
 
    //TH: Use Wii-controller if present, otherwise use analog potentiometer
-//   if (nunchuk_read()) {
-//   if (1==1) {
-      // Work with nunchuk_data
-//      nunchuk_print();
+   n=0; //TH: If nunchuk read fails, set idle position
+   m++;
 
-      buttonStatus = !(nunchuk_buttonZ()); //TH:
-      // button2Status = nunchuk_buttonC();
-      n = nunchuk_joystickX(); // Read wheelPosition
-      padPosition = map(n, 1023, 0, 1 + PadLenght, width - 1 - PadLenght);
-      padPosition = width/2;
+   if (m>500) {
+
+
+      //TH: get the Nunchuk data
+      long* data = nunchuk.getNunChukData();
+
+      //TH: access the data using pointer arithmetic
+      // uint8_t joy_x = *(data + 0);
+      // uint8_t joy_y = *(data + 1);
+      // uint8_t accel_x = *(data + 2);
+      // uint8_t accel_y = *(data + 3);
+      // uint8_t accel_z = *(data + 4);
+      uint8_t button_z = (*(data + 5) >> 0) & 1;
+      // uint8_t button_c = (*(data + 5) >> 1) & 1;
+
+//      if (nunchuk_read()) {
+//         buttonStatus = (nunchuk_buttonZ()); //TH: Button Z to start ball
+buttonStatus = button_z;
+//         button2Status = nunchuk_buttonC(); //TH:
+//      buttonStatus = myData.nunchuk_data[6]
+//         n = nunchuk_joystickX(); // Read wheelPosition
+         //n = nunchuk_accelX();
+         //Serial.println(n);
+         // m=(n/100);
+         s[0]=35;
+         s[1]=35;
+         s[2]=35;
+         vga.printSRAM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, s, 2, 54, 0);
+
+         s[0]=(int(n/100))+48;
+         s[1]=int((n-(s[0]*100))/10)+48;
+         s[2]=57;
+         // s[1]=((n-m*100)/10)+48;
+         // s[2]=(n%10)+48;
+         //String(n).toCharArray(s,3);
+         vga.printSRAM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, s, 2, 54, 1);
+         padPosition = map(n, 255, 0, 1 + PadLenght, width - 1 - PadLenght); //TH: map(value, fromLow, fromHigh, toLow, toHigh)
+         padPosition = width/2;
+//      }
+      m=0;
+   }
 
    // } else {
    //    buttonStatus = !(digitalRead(BUTTON_PIN)); //TH: Changed to active low 
    //    button2Status = !(digitalRead(SOUND_PIN)); //TH: Active low, turn sound on/off 
    //    wheelPosition = analogRead(WHEEL_PIN);
    //    padPosition = map(wheelPosition, 1023, 0, 1 + PadLenght, width - 1 - PadLenght);
-   // }
 
 }
 

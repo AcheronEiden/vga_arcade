@@ -1,5 +1,20 @@
+/*
+ VGA Arcade [VGAX.cpp] - for 1TE663 project - Version 20230224
+
+ Changed resolution to 112x60 to save SRAM.
+ Changed center line for better centering.
+ Mutes audio, but still use VGAX output.
+
+ CHANGES BY TOBIAS HOLM (/TH:) AND MOHAMMED NOUR KAMALMAZ (/MK:)
+*/
+
 #include "VGAX.h"
 #define VGAX_DEV_DEPRECATED 1
+#include <avr/io.h> //TH: To set IO pins using C
+#include <Nunchuk.h> //TH: To use Wii-controller, uses ?B RAM
+#include <Wire.h> //TH: To use Wii-controller, uses 182B RAM
+//#include <Nunchuck.h> //TH: To use Wii-controller, uses 391B RAM (NOT USED)
+//#include <I2C.h> //TH: To use Wii-controller, uses 2059-1884B= 175B RAM (NOT USED)
 
 //HSYNC pin used by TIMER2
 #if defined(__AVR_ATmega2560__)
@@ -41,13 +56,35 @@ unsigned long vtimer;
 static byte aline, rlinecnt;
 static byte vskip;
 byte vgaxfb[VGAX_HEIGHT*VGAX_BWIDTH];
+uint8_t nunchuk_initialized = 1; //TH: Flag to only init nunchuk once
+uint16_t no1 = 0; // Used as nameless temp-var to save RAM. (small loops, reading wheelPosition)
 
 //VSYNC interrupt
 ISR(TIMER1_OVF_vect) {
   aline=-1;
   vskip=SKIPLINES;
   vtimer++;
-  rlinecnt=0;
+  rlinecnt=0; //TH:Reset Rasterline counter?
+
+  no1 += 1; //TH: Wait 4s before init Nunchuk
+  if (no1 >5) { //TH: Init nunchuk once
+//  if (nunchuk_initialized == 0 & no1 >5) { //TH: Init nunchuk once
+    no1 = 0;
+//    if (nunchuk_read()) {
+//      no1 = (nunchuk_buttonZ()); //TH: Button Z to start ball
+//         button2Status = nunchuk_buttonC(); //TH:
+//      buttonStatus = myData.nunchuk_data[6]
+//         n = nunchuk_joystickX(); // Read wheelPosition
+         //n = nunchuk_accelX();
+//    }
+
+    //nunchuk_initialized = 1; //TH: Flag nunchuk initiated
+    //PORTC ^= 1; //TH: Toggle portA bit 0
+//     Wire.begin(); //TH: To use Wii-controller
+//     Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz)
+// //  Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
+//     nunchuk_init(); //TH: Init the nunchuk
+  }
 }
 //HSYNC interrupt
 ISR(TIMER2_OVF_vect) {
@@ -205,11 +242,17 @@ ISR(TIMER2_OVF_vect) {
   } 
 }
 void VGAX::begin(bool enableTone) {
+  //Setup Nunchuk
+  Wire.begin(); //TH: To use Wii-controller
+  Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
+  nunchuk_init(); //TH: Init the nunchuk
+
   //Timers setup code, modified version of the Nick Gammon's VGA sketch
   cli();
   //setup audio pin
   if (enableTone) {
     pinMode(A0, OUTPUT);
+    pinMode(A0, INPUT); //TH: Mute audio, but still use VGAX output. Two lines of same gave stable video when beeping...
   }
   //disable TIMER0 interrupt
   TIMSK0=0;

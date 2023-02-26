@@ -9,10 +9,11 @@
 #ifndef NUNCHUK_H
 #define NUNCHUK_H
 
-#include <Wire.h>
-#include <math.h> //TH: fixes error: 'atan2' was not declared in this scope
-#include <VGAX.h> //TH: To use the VGA delay-routine
-VGAX vga2; //TH: To use the VGA delay-routine
+#include <Wire.h> //TH: To use Wii-controller, uses 182B RAM
+//#include <MyNunchuk.h> //TH:Switched to external struct
+//#include <math.h> //TH: fixes error: 'atan2' was not declared in this scope
+//#include <VGAX.h> //TH: To use the VGA delay-routine
+//VGAX vga2; //TH: To use the VGA delay-routine
 
 // Calibration accelerometer values, depends on your Nunchuk
 #define NUNCHUK_ACCEL_X_ZERO 512
@@ -30,7 +31,7 @@ VGAX vga2; //TH: To use the VGA delay-routine
 // #define NUNCHUK_DEBUG
 
 // The Nunchuk I2C address
-#define NUNCHUK_ADDRESS 0x52
+#define NUNCHUK_ADDRESS 0x52 //TH: Correct address is 0x52
 
 #if ARDUINO >= 100
 #define I2C_READ() Wire.read()
@@ -43,8 +44,80 @@ VGAX vga2; //TH: To use the VGA delay-routine
 #define I2C_START(x) Wire.beginTransmission(x)
 #define I2C_STOP() Wire.endTransmission(true)
 
-uint8_t nunchuk_data[6];
-uint8_t nunchuk_cali[16];
+//TH: A public class to be able to pass data between different cpp-files
+// class NunChukData {
+// public:
+// //    static uint8_t nunchuk_data[6]; //TH:Static (globally accessible) variable
+//     uint8_t nunchuk_data[6]; //TH:(globally accessible) variable
+//     uint8_t getNunChukData() {
+//         return nunchuk_data;
+//     }
+//     int myVar;
+//     int getMyVar() {
+//         return myVar;
+//     }
+// };
+
+//TH:---vvv--- A public class to be able to pass data between different cpp-files
+uint8_t nunchuk_data[6] = {}; //TH:(globally accessible) array of Nunchuk data
+
+class NunChukData {
+public:
+    uint8_t* getNunChukData() { //TH: Return the Nunchuk data array
+        return nunchuk_data;
+    }
+
+    void nunchuk_init() {
+        I2C_START(NUNCHUK_ADDRESS);
+        I2C_WRITE(0xF0); //TH: Black Nunchuk
+        I2C_WRITE(0x55); //TH: Black Nunchuk
+        I2C_STOP();
+        mydelay();
+        
+        I2C_START(NUNCHUK_ADDRESS);
+        I2C_WRITE(0xFB); //TH: Black Nunchuk
+        I2C_WRITE(0x00); //TH: Black Nunchuk
+        I2C_STOP();
+        mydelay();
+
+        // I2C_START(NUNCHUK_ADDRESS);
+        // I2C_WRITE(0x40); //TH: White Nunchuk 0x40
+        // I2C_WRITE(0x00); //TH: White Nunchuk 0x00
+        // I2C_STOP();
+        // vga2.delay(1);
+        // I2C_START(NUNCHUK_ADDRESS);
+        // I2C_WRITE(0x00); //TH: White Nunchuk
+        // I2C_STOP();
+        // vga2.delay(1);
+    }
+
+    // Read a full chunk of data from Nunchuk. @return A boolean if the data transfer was successful
+    uint8_t nunchuk_read() {
+        uint8_t i;
+        Wire.requestFrom(NUNCHUK_ADDRESS, 6);
+        for (i = 0; i < 6 && Wire.available(); i++) {
+            nunchuk_data[i] = I2C_READ();
+        }
+        I2C_START(NUNCHUK_ADDRESS);
+        I2C_WRITE(0x00);
+        I2C_STOP();
+        return i == 6;
+    }
+
+    void mydelay() {
+        int n;
+        for (n = 1; n < 4000; ++n) { //TH: Count to 4000 ?
+        }
+    }
+
+}; //TH:---^^^---
+
+// uint8_t nunchuk_data[6]; //TH:Switched to external struct
+// uint8_t nunchuk_cali[16]; //TH: Verkar inte behövas
+//struct MyNunchukd_data myData; //TH:Switched to external struct
+//TH: Define variables as external
+//extern struct nunchuk_data nunchuk_extdata;
+//extern nunchuk_data nunchuk_extdata;
 
 #if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) // Only Arduino UNO
 /**
@@ -52,245 +125,240 @@ uint8_t nunchuk_cali[16];
  * Like for the famous WiiChuck adapter
  * @see https://todbot.com/blog/2008/02/18/wiichuck-wii-nunchuck-adapter-available/
  */
-static void nunchuk_init_power() {
-    // Add power supply for port C2 (GND) and C3 (PWR)
-    PORTC &= ~_BV(PORTC2);
-    PORTC |= _BV(PORTC3);
-    DDRC |= _BV(PORTC2) | _BV(PORTC3);
-//    delay(100); //TH: Removed
-}
+//TH:Removed routine "void nunchuk_init_power"
+// static void nunchuk_init_power() {
+//     // Add power supply for port C2 (GND) and C3 (PWR)
+//     PORTC &= ~_BV(PORTC2);
+//     PORTC |= _BV(PORTC3);
+//     DDRC |= _BV(PORTC2) | _BV(PORTC3);
+// //    delay(100); //TH: Removed
+// }
 #endif
+
+// static void mydelay() {
+//     int n;
+//     for (n = 1; n < 4000; ++n) { //TH: Count to 4000 ?
+//     }
+// }
+
 /**
  * Initializes the Nunchuk communication by sending a sequence of bytes
  */
-static void nunchuk_init() {
+// static void nunchuk_init() {
 
-#ifdef NUNCHUK_DISABLE_ENCRYPTION
-    I2C_START(NUNCHUK_ADDRESS);
-    I2C_WRITE(0xF0); //TH: Black Nunchuk
-    I2C_WRITE(0x55); //TH: Black Nunchuk
-    I2C_STOP();
-    vga2.delay(10);
-    I2C_START(NUNCHUK_ADDRESS);
-    I2C_WRITE(0xFB); //TH: Black Nunchuk
-    I2C_WRITE(0x00); //TH: Black Nunchuk
-    I2C_STOP();
-    vga2.delay(10);
+// #ifdef NUNCHUK_DISABLE_ENCRYPTION
+//     I2C_START(NUNCHUK_ADDRESS);
+//     I2C_WRITE(0xF0); //TH: Black Nunchuk
+//     I2C_WRITE(0x55); //TH: Black Nunchuk
+//     I2C_STOP();
+//     mydelay();
+    
+//     I2C_START(NUNCHUK_ADDRESS);
+//     I2C_WRITE(0xFB); //TH: Black Nunchuk
+//     I2C_WRITE(0x00); //TH: Black Nunchuk
+//     I2C_STOP();
+//     mydelay();
+//     //vga2.delay(10);
 
-    // I2C_START(NUNCHUK_ADDRESS);
-    // I2C_WRITE(0x40); //TH: White Nunchuk
-    // I2C_WRITE(0x00); //TH: White Nunchuk
-    // I2C_STOP();
-    // vga2.delay(10);
-    // I2C_START(NUNCHUK_ADDRESS);
-    // I2C_WRITE(0x00); //TH: White Nunchuk
-    // I2C_STOP();
-    // vga2.delay(10);
-#else
-    I2C_START(NUNCHUK_ADDRESS);
-    I2C_WRITE(0x40);
-    I2C_WRITE(0x00);
-    I2C_STOP();
-    // delay(1);
-#endif
+//     // I2C_START(NUNCHUK_ADDRESS);
+//     // I2C_WRITE(0x40); //TH: White Nunchuk 0x40
+//     // I2C_WRITE(0x00); //TH: White Nunchuk 0x00
+//     // I2C_STOP();
+//     // vga2.delay(1);
+//     // I2C_START(NUNCHUK_ADDRESS);
+//     // I2C_WRITE(0x00); //TH: White Nunchuk
+//     // I2C_STOP();
+//     // vga2.delay(1);
+// #else
+//     I2C_START(NUNCHUK_ADDRESS);
+//     I2C_WRITE(0x40);
+//     I2C_WRITE(0x00);
+//     I2C_STOP();
+//     // delay(1);
+// #endif
 
-#ifdef NUNCHUK_DEBUG
-    Serial.print("Ident: "); // 0xA4200000 for Nunchuck, 0xA4200101 for Classic, 0xA4200402 for Balance
+// #ifdef NUNCHUK_DEBUG
+//     Serial.print("Ident: "); // 0xA4200000 for Nunchuck, 0xA4200101 for Classic, 0xA4200402 for Balance
 
-    I2C_START(NUNCHUK_ADDRESS);
-    I2C_WRITE(0xFA);
-    I2C_STOP();
+//     I2C_START(NUNCHUK_ADDRESS);
+//     I2C_WRITE(0xFA);
+//     I2C_STOP();
 
-    Wire.requestFrom(NUNCHUK_ADDRESS, 6);
-    for (uint8_t i = 0; i < 6; i++) {
-        if (Wire.available()) {
-            Serial.print(I2C_READ(), HEX);
-            Serial.print(" ");
-        }
-    }
-    I2C_STOP();
-    Serial.println("");
+//     Wire.requestFrom(NUNCHUK_ADDRESS, 6);
+//     for (uint8_t i = 0; i < 6; i++) {
+//         if (Wire.available()) {
+//             Serial.print(I2C_READ(), HEX);
+//             Serial.print(" ");
+//         }
+//     }
+//     I2C_STOP();
+//     Serial.println("");
 
-//    delay(100); // Wait for serial transfer, before loop()ing
-    vga2.delay(100); //TH: Replaced delay routine
-#endif
+// //    delay(100); // Wait for serial transfer, before loop()ing
+//     mydelay();
+// //    vga2.delay(100); //TH: Replaced delay routine
+// #endif
 
-}
+// }
 
-/**
- * Decodes a byte if encryption is used
- *
- * @param x The byte to be decoded
- */
-static inline uint8_t nunchuk_decode_byte(uint8_t x) {
-#ifdef NUNCHUK_DISABLE_ENCRYPTION
-    return x;
-#else
-    return (x ^ 0x17) + 0x17;
-#endif
-}
 
-/**
- * Central function to read a full chunk of data from Nunchuk
- *
- * @return A boolean if the data transfer was successful
- */
-static uint8_t nunchuk_read() {
+// /**
+//  * Central function to read a full chunk of data from Nunchuk
+//  *
+//  * @return A boolean if the data transfer was successful
+//  */
+// static uint8_t nunchuk_read() {
 
-    uint8_t i;
-    Wire.requestFrom(NUNCHUK_ADDRESS, 6);
-#ifdef SAM
-//    delayMicroseconds(10);
-    vga2.delay(10); //TH: Replaced delay routine
-#endif
-    for (i = 0; i < 6 && Wire.available(); i++) {
-        nunchuk_data[i] = nunchuk_decode_byte(I2C_READ());
-    }
-    I2C_START(NUNCHUK_ADDRESS);
-    I2C_WRITE(0x00);
-#ifdef SAM
-//    delayMicroseconds(100);
-    vga2.delay(100); //TH: Replaced delay routine
-#endif
-    I2C_STOP();
-    return i == 6;
-}
+//     uint8_t i;
+//     Wire.requestFrom(NUNCHUK_ADDRESS, 6);
+//     for (i = 0; i < 6 && Wire.available(); i++) {
+//         nunchuk_data[i] = I2C_READ();
+//     }
+//     I2C_START(NUNCHUK_ADDRESS);
+//     I2C_WRITE(0x00);
+//     I2C_STOP();
+//     return i == 6;
+// }
 
-/**
- * Checks the current state of button Z
- */
-static uint8_t nunchuk_buttonZ() {
-    return (~nunchuk_data[5] >> 0) & 1;
-}
+// /**
+//  * Checks the current state of button Z
+//  */
+// static uint8_t nunchuk_buttonZ() {
+//     return (~nunchuk_data[5] >> 0) & 1;
+// }
 
-/**
- * Checks the current state of button C
- */
-static uint8_t nunchuk_buttonC() {
-    return (~nunchuk_data[5] >> 1) & 1;
-}
+// /**
+//  * Checks the current state of button C
+//  */
+// static uint8_t nunchuk_buttonC() {
+//     return (~nunchuk_data[5] >> 1) & 1;
+// //    return (~myData.nunchuk_data[5] >> 1) & 1; //TH:Switched to external struct
+// }
 
-/**
- * Retrieves the raw X-value of the joystick
- */
-static uint8_t nunchuk_joystickX_raw() {
-    return nunchuk_data[0];
-}
+// /**
+//  * Retrieves the raw X-value of the joystick
+//  */
+// static uint8_t nunchuk_joystickX_raw() {
+//     return nunchuk_data[0];
+// }
 
-/**
- * Retrieves the raw Y-value of the joystick
- */
-static uint8_t nunchuk_joystickY_raw() {
-    return nunchuk_data[1];
-}
+// /**
+//  * Retrieves the raw Y-value of the joystick
+//  */
+// static uint8_t nunchuk_joystickY_raw() {
+//     return nunchuk_data[1];
+// }
 
-/**
- * Retrieves the calibrated X-value of the joystick
- */
-static int16_t nunchuk_joystickX() {
-    return (int16_t) nunchuk_joystickX_raw() - (int16_t) NUNCHUK_JOYSTICK_X_ZERO;
-}
+// /**
+//  * Retrieves the calibrated X-value of the joystick
+//  */
+// static int16_t nunchuk_joystickX() {
+//     return (int16_t) nunchuk_joystickX_raw() - (int16_t) NUNCHUK_JOYSTICK_X_ZERO;
+// }
 
-/**
- * Retrieves the calibrated Y-value of the joystick
- */
-static int16_t nunchuk_joystickY() {
-    return (int16_t) nunchuk_joystickY_raw() - (int16_t) NUNCHUK_JOYSTICK_Y_ZERO;
-}
+// /**
+//  * Retrieves the calibrated Y-value of the joystick
+//  */
+// static int16_t nunchuk_joystickY() {
+//     return (int16_t) nunchuk_joystickY_raw() - (int16_t) NUNCHUK_JOYSTICK_Y_ZERO;
+// }
 
-/**
- * Calculates the angle of the joystick
- */
-static float nunchuk_joystick_angle() {
-    return atan2((float) nunchuk_joystickY(), (float) nunchuk_joystickX());
-}
+// /**
+//  * Calculates the angle of the joystick
+//  */
+// static float nunchuk_joystick_angle() {
+// //    return atan2((float) nunchuk_joystickY(), (float) nunchuk_joystickX());
+//     return 0;
+// }
 
-/**
- * Retrieves the raw X-value of the accelerometer
- */
-static uint16_t nunchuk_accelX_raw() {
-    return ((uint16_t) nunchuk_data[2] << 2) | ((nunchuk_data[5] >> 2) & 3);
-}
+// /**
+//  * Retrieves the raw X-value of the accelerometer
+//  */
+// static uint16_t nunchuk_accelX_raw() {
+//     return ((uint16_t) myData.nunchuk_data[2] << 2) | ((myData.nunchuk_data[5] >> 2) & 3); //TH:Switched to external struct
+// }
 
-/**
- * Retrieves the raw Y-value of the accelerometer
- */
-static uint16_t nunchuk_accelY_raw() {
-    return ((uint16_t) nunchuk_data[3] << 2) | ((nunchuk_data[5] >> 4) & 3);
-}
+// /**
+//  * Retrieves the raw Y-value of the accelerometer
+//  */
+// static uint16_t nunchuk_accelY_raw() {
+//     return ((uint16_t) myData.nunchuk_data[3] << 2) | ((myData.nunchuk_data[5] >> 4) & 3); //TH:Switched to external struct
+// }
 
-/**
- * Retrieves the raw Z-value of the accelerometer
- */
-static uint16_t nunchuk_accelZ_raw() {
-    return ((uint16_t) nunchuk_data[4] << 2) | ((nunchuk_data[5] >> 6) & 3);
-}
+// /**
+//  * Retrieves the raw Z-value of the accelerometer
+//  */
+// static uint16_t nunchuk_accelZ_raw() {
+//     return ((uint16_t) myData.nunchuk_data[4] << 2) | ((myData.nunchuk_data[5] >> 6) & 3); //TH:Switched to external struct
+// }
 
-/**
- * Retrieves the calibrated X-value of the accelerometer
- */
-static int16_t nunchuk_accelX() {
-    return (int16_t) nunchuk_accelX_raw() - (int16_t) NUNCHUK_ACCEL_X_ZERO;
-}
+// /**
+//  * Retrieves the calibrated X-value of the accelerometer
+//  */
+// static int16_t nunchuk_accelX() {
+//     return (int16_t) nunchuk_accelX_raw() - (int16_t) NUNCHUK_ACCEL_X_ZERO;
+// }
 
-/**
- * Retrieves the calibrated Y-value of the accelerometer
- */
-static int16_t nunchuk_accelY() {
-    return (int16_t) nunchuk_accelY_raw() - (int16_t) NUNCHUK_ACCEL_Y_ZERO;
-}
+// /**
+//  * Retrieves the calibrated Y-value of the accelerometer
+//  */
+// static int16_t nunchuk_accelY() {
+//     return (int16_t) nunchuk_accelY_raw() - (int16_t) NUNCHUK_ACCEL_Y_ZERO;
+// }
 
-/**
- * Retrieves the calibrated Z-value of the accelerometer
- */
-static int16_t nunchuk_accelZ() {
-    return (int16_t) nunchuk_accelZ_raw() - (int16_t) NUNCHUK_ACCEL_Z_ZERO;
-}
+// /**
+//  * Retrieves the calibrated Z-value of the accelerometer
+//  */
+// static int16_t nunchuk_accelZ() {
+//     return (int16_t) nunchuk_accelZ_raw() - (int16_t) NUNCHUK_ACCEL_Z_ZERO;
+// }
 
-/**
- * Calculates the pitch angle THETA around y-axis of the Nunchuk in radians
- */
-static float nunchuk_pitch() { // tilt-y
-    return atan2((float) nunchuk_accelY(), (float) nunchuk_accelZ());
-}
+// /**
+//  * Calculates the pitch angle THETA around y-axis of the Nunchuk in radians
+//  */
+// static float nunchuk_pitch() { // tilt-y
+// //    return atan2((float) nunchuk_accelY(), (float) nunchuk_accelZ());
+//     return 0;
+// }
 
-/**
- * Calculates the roll angle PHI around x-axis of the Nunchuk in radians
- */
-static float nunchuk_roll() { // tilt-x
-    return atan2((float) nunchuk_accelX(), (float) nunchuk_accelZ());
-}
+// /**
+//  * Calculates the roll angle PHI around x-axis of the Nunchuk in radians
+//  */
+// static float nunchuk_roll() { // tilt-x
+// //    return atan2((float) nunchuk_accelX(), (float) nunchuk_accelZ());
+//     return 0;
+// }
 
-/**
- * A handy function to print either verbose information of the Nunchuk or a CSV stream for Processing
- */
-static void nunchuk_print() {
+// /**
+//  * A handy function to print either verbose information of the Nunchuk or a CSV stream for Processing
+//  */
+// static void nunchuk_print() {
 
-#ifdef NUNCHUK_DEBUG
-    char buf[100];
+// #ifdef NUNCHUK_DEBUG
+//     char buf[100];
 
-    sprintf(buf, "Joy X=%4d Y=%4d   Acc X=%4d Y=%4d Z=%4d   Btn Z=%1d C=%1d\n",
-        nunchuk_joystickX(), nunchuk_joystickY(),
-        nunchuk_accelX(), nunchuk_accelY(), nunchuk_accelZ(),
-        nunchuk_buttonZ(), nunchuk_buttonC());
-    Serial.print(buf);
-#else
-//TH: Removed below because 'Serial' was not declared in this scope
-    // Serial.print(nunchuk_joystickX(), DEC);
-    // Serial.print(",");
-    // Serial.print(nunchuk_joystickY(), DEC);
-    // Serial.print(",");
-    // Serial.print(nunchuk_accelX(), DEC);
-    // Serial.print(",");
-    // Serial.print(nunchuk_accelY(), DEC);
-    // Serial.print(",");
-    // Serial.print(nunchuk_accelZ(), DEC);
-    // Serial.print(",");
-    // Serial.print(nunchuk_buttonZ(), DEC);
-    // Serial.print(",");
-    // Serial.print(nunchuk_buttonC(), DEC);
-    // Serial.print("\n");
-#endif
-}
+//     sprintf(buf, "Joy X=%4d Y=%4d   Acc X=%4d Y=%4d Z=%4d   Btn Z=%1d C=%1d\n",
+//         nunchuk_joystickX(), nunchuk_joystickY(),
+//         nunchuk_accelX(), nunchuk_accelY(), nunchuk_accelZ(),
+//         nunchuk_buttonZ(), nunchuk_buttonC());
+//     Serial.print(buf);
+// #else
+// //TH: Removed below because 'Serial' was not declared in this scope
+//     // Serial.print(nunchuk_joystickX(), DEC);
+//     // Serial.print(",");
+//     // Serial.print(nunchuk_joystickY(), DEC);
+//     // Serial.print(",");
+//     // Serial.print(nunchuk_accelX(), DEC);
+//     // Serial.print(",");
+//     // Serial.print(nunchuk_accelY(), DEC);
+//     // Serial.print(",");
+//     // Serial.print(nunchuk_accelZ(), DEC);
+//     // Serial.print(",");
+//     // Serial.print(nunchuk_buttonZ(), DEC);
+//     // Serial.print(",");
+//     // Serial.print(nunchuk_buttonC(), DEC);
+//     // Serial.print("\n");
+// #endif
+// }
 
 #endif

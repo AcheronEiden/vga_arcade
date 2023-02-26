@@ -16,6 +16,11 @@
 #include "toneB.h" //RAW SID register data file in flash, Ball hit pad
 #include "toneC.h" //RAW SID register data file in flash, Ball hit block
 #include "toneD.h" //RAW SID register data file in flash, Game Over
+#include "Arkanoid04.h" //TH: Game Start
+#include "Arkanoid09.h" //TH: Ball hit pad
+#include "Arkanoid10.h" //TH: Ball hit block
+#include "Arkanoid15.h" //TH: Smashed
+#include "Arkanoid16.h" //TH: Ball hit block (shorter)
 
 /************************************************************************
 
@@ -166,7 +171,83 @@ for(uint16_t sidPointer=0;sidPointer<=sidLength4;sidPointer++){
   };
 }
 
+void functionArkanoid04() {
+for(uint16_t sidPointer=0;sidPointer<=sidLengthArkanoid04;sidPointer++){
+    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+      mySid.set_register(sidRegister, (pgm_read_byte(&sidDataArkanoid04[(sidPointer+sidRegister)])));
+    };
+    delay(8);
+    sidPointer=sidPointer+24;
+  };
+  // set all registers to 0 to stop playing music/ stop noise from continuing
+  for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+      mySid.set_register(sidRegister, 0);
+  };
+}
+
+void functionArkanoid09() {
+for(uint16_t sidPointer=0;sidPointer<=sidLengthArkanoid09;sidPointer++){
+    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+      mySid.set_register(sidRegister, (pgm_read_byte(&sidDataArkanoid09[(sidPointer+sidRegister)])));
+    };
+    delay(8);
+    sidPointer=sidPointer+24;
+  };
+  // set all registers to 0 to stop playing music/ stop noise from continuing
+  for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+      mySid.set_register(sidRegister, 0);
+  };
+}
+
+void functionArkanoid10() {
+for(uint16_t sidPointer=0;sidPointer<=sidLengthArkanoid10;sidPointer++){
+    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+      mySid.set_register(sidRegister, (pgm_read_byte(&sidDataArkanoid10[(sidPointer+sidRegister)])));
+    };
+    delay(8);
+    sidPointer=sidPointer+24;
+  };
+  // set all registers to 0 to stop playing music/ stop noise from continuing
+  for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+      mySid.set_register(sidRegister, 0);
+  };
+}
+
+void functionArkanoid15() {
+for(uint16_t sidPointer=0;sidPointer<=sidLengthArkanoid15;sidPointer++){
+    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+      mySid.set_register(sidRegister, (pgm_read_byte(&sidDataArkanoid15[(sidPointer+sidRegister)])));
+    };
+    delay(8);
+    sidPointer=sidPointer+24;
+  };
+  // set all registers to 0 to stop playing music/ stop noise from continuing
+  for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+      mySid.set_register(sidRegister, 0);
+  };
+}
+
+void functionArkanoid16() {
+for(uint16_t sidPointer=0;sidPointer<=sidLengthArkanoid16;sidPointer++){
+    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+      mySid.set_register(sidRegister, (pgm_read_byte(&sidDataArkanoid16[(sidPointer+sidRegister)])));
+    };
+    delay(8);
+    sidPointer=sidPointer+24;
+  };
+  // set all registers to 0 to stop playing music/ stop noise from continuing
+  for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+      mySid.set_register(sidRegister, 0);
+  };
+}
+
+int bail = 0; //TH: Only once!
 void loop() {
+  if (bail == 0) {
+    bail = 1;
+    functionArkanoid16(); //TH: Alive!
+  }
+  
   while (Wire.available() > 0) {
   char command = Wire.read();
     if (command == 'A') 
