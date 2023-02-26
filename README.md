@@ -110,6 +110,8 @@ MOS6581 SID Emulator Extra examples MIDI [https://github.com/daitangio/sid-ardui
 
 SIDDump github [https://github.com/munshkr/siddump](https://github.com/munshkr/siddump)
 
+SIDDump V1.08: [https://csdb.dk/release/?id=192079#google_vignette](https://csdb.dk/release/?id=192079#google_vignette)
+
 SIDDumper from SIDCog project (tool missing) [https://forums.parallax.com/](https://forums.parallax.com/discussion/118285/sidcog-the-sound-of-the-commodore-64-now-in-the-obex/p1)
 
 Tools for analyzing SID music [https://github.com/anarkiwi/desidulate](https://github.com/anarkiwi/desidulate)
