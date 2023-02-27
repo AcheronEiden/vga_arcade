@@ -112,7 +112,7 @@ for(uint16_t sidPointer=0;sidPointer<=sidLengthA;sidPointer++){
     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
       mySid.set_register(sidRegister, (pgm_read_byte(&sidDataA[(sidPointer+sidRegister)])));
     };
-    delay(19);
+    delay(9);
     sidPointer=sidPointer+24;
   };
 }
@@ -122,7 +122,7 @@ for(uint16_t sidPointer=0;sidPointer<=sidLengthB;sidPointer++){
     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
       mySid.set_register(sidRegister, (pgm_read_byte(&sidDataB[(sidPointer+sidRegister)])));
     };
-    delay(19);
+    delay(9);
     sidPointer=sidPointer+24;
   };
 }
@@ -132,7 +132,7 @@ for(uint16_t sidPointer=0;sidPointer<=sidLengthC;sidPointer++){
     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
       mySid.set_register(sidRegister, (pgm_read_byte(&sidDataC[(sidPointer+sidRegister)])));
     };
-    delay(19);
+    delay(9);
     sidPointer=sidPointer+24;
   };
 }
@@ -142,7 +142,7 @@ for(uint16_t sidPointer=0;sidPointer<=sidLengthD;sidPointer++){
     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
       mySid.set_register(sidRegister, (pgm_read_byte(&sidDataD[(sidPointer+sidRegister)])));
     };
-    delay(19);
+    delay(9);
     sidPointer=sidPointer+24;
   };
 }
@@ -152,7 +152,7 @@ for(uint16_t sidPointer=0;sidPointer<=sidLengthE;sidPointer++){
     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
       mySid.set_register(sidRegister, (pgm_read_byte(&sidDataE[(sidPointer+sidRegister)])));
     };
-    delay(19);
+    delay(9);
     sidPointer=sidPointer+24;
   };
 }
@@ -162,7 +162,7 @@ for(uint16_t sidPointer=0;sidPointer<=sidLengthF;sidPointer++){
     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
       mySid.set_register(sidRegister, (pgm_read_byte(&sidDataF[(sidPointer+sidRegister)])));
     };
-    delay(19);
+    delay(9);
     sidPointer=sidPointer+24;
   };
 }
