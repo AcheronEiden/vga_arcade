@@ -44,6 +44,26 @@
 #define I2C_START(x) Wire.beginTransmission(x)
 #define I2C_STOP() Wire.endTransmission(true)
 
+//TH:---vvv--- A public class to be able to pass data between different cpp-files
+//uint8_t nunchuk_data[6] = {}; //TH:(globally accessible) array of Nunchuk data
+
+class NunChukData {
+public:
+    uint8_t* getNunChukData() { //TH: Return the Nunchuk data array
+        return nunchuk_data;
+    }
+
+    static void nunchuk_init(); // Start wire and send init commands to Nunchuk
+
+    uint8_t nunchuk_read(); // Read a full chunk of data from Nunchuk. @return A boolean if the data transfer was successful
+
+    void mydelay();
+    
+    //Using the static keyword in a function declaration or definition can help reduce namespace pollution, by limiting the visibility of the function to only the source file where it is needed.
+}; //TH:---^^^---
+
+
+
 //TH: A public class to be able to pass data between different cpp-files
 // class NunChukData {
 // public:
@@ -58,64 +78,66 @@
 //     }
 // };
 
-//TH:---vvv--- A public class to be able to pass data between different cpp-files
-//uint8_t nunchuk_data[6] = {}; //TH:(globally accessible) array of Nunchuk data
+// //TH:---vvv--- A public class to be able to pass data between different cpp-files
+// //uint8_t nunchuk_data[6] = {}; //TH:(globally accessible) array of Nunchuk data
 
-class NunChukData {
-public:
-    uint8_t* getNunChukData() { //TH: Return the Nunchuk data array
-        return nunchuk_data;
-    }
+// class NunChukData {
+// public:
+//     uint8_t* getNunChukData() { //TH: Return the Nunchuk data array
+//         return nunchuk_data;
+//     }
 
-    void nunchuk_init() {
-        I2C_START(NUNCHUK_ADDRESS);
-        I2C_WRITE(0xF0); //TH: Black Nunchuk
-        I2C_WRITE(0x55); //TH: Black Nunchuk
-        I2C_STOP();
-        mydelay();
+//     void nunchuk_init() {
+//         I2C_START(NUNCHUK_ADDRESS);
+//         I2C_WRITE(0xF0); //TH: Black Nunchuk
+//         I2C_WRITE(0x55); //TH: Black Nunchuk
+//         I2C_STOP();
+//         mydelay();
         
-        I2C_START(NUNCHUK_ADDRESS);
-        I2C_WRITE(0xFB); //TH: Black Nunchuk
-        I2C_WRITE(0x00); //TH: Black Nunchuk
-        I2C_STOP();
-        mydelay();
+//         I2C_START(NUNCHUK_ADDRESS);
+//         I2C_WRITE(0xFB); //TH: Black Nunchuk
+//         I2C_WRITE(0x00); //TH: Black Nunchuk
+//         I2C_STOP();
+//         mydelay();
 
-        I2C_START(NUNCHUK_ADDRESS); // Is this wrong? Encryption?
-        I2C_WRITE(0x40); //TH: White Nunchuk 0x40
-        I2C_WRITE(0x00); //TH: White Nunchuk 0x00
-        I2C_STOP();
-        mydelay();
+//         // I2C_START(NUNCHUK_ADDRESS); // Is this wrong? Encryption?
+//         // I2C_WRITE(0x40); //TH: White Nunchuk 0x40
+//         // I2C_WRITE(0x00); //TH: White Nunchuk 0x00
+//         // I2C_STOP();
+//         // mydelay();
 
-        I2C_START(NUNCHUK_ADDRESS);
-        I2C_WRITE(0x00); //TH: White Nunchuk
-        I2C_STOP();
-        mydelay();
-    }
+//         // I2C_START(NUNCHUK_ADDRESS);
+//         // I2C_WRITE(0x00); //TH: White Nunchuk
+//         // I2C_STOP();
+//         // mydelay();
+//     }
 
-    // Read a full chunk of data from Nunchuk. @return A boolean if the data transfer was successful
-    uint8_t nunchuk_read() {
-uint16_t no1 = 0; // Used as nameless temp-var to save RAM. (small loops, reading wheelPosition)
-        uint8_t i;
-        Wire.requestFrom(NUNCHUK_ADDRESS, 6);
-        for (i = 0; i < 6 && Wire.available(); i++) {
-            // nunchuk_data[i] = I2C_READ();
-        }
-        mydelay();
-        I2C_START(NUNCHUK_ADDRESS);
-        I2C_WRITE(0x00);
-        I2C_STOP();
-        mydelay();
+//     // Read a full chunk of data from Nunchuk. @return A boolean if the data transfer was successful
+//     uint8_t nunchuk_read() {
+//         nunchuk_data[5] = 1;
+//         PORTC ^= 1; //TH: Toggle portA bit 0
+// uint16_t no1 = 0; // Used as nameless temp-var to save RAM. (small loops, reading wheelPosition)
+//         uint8_t i;
+//         // Wire.requestFrom(NUNCHUK_ADDRESS, 6);
+//         // for (i = 0; i < 6 && Wire.available(); i++) {
+//         //     nunchuk_data[i] = I2C_READ();
+//         // }
+//         mydelay();
+//         // I2C_START(NUNCHUK_ADDRESS);
+//         // I2C_WRITE(0x00);
+//         // I2C_STOP();
+//         mydelay();
 
-        return i == 6;
-    }
+//         return i == 6;
+//     }
 
-    void mydelay() {
-        int n;
-        for (n = 1; n < 4000; ++n) { //TH: Count to 4000 ?
-        }
-    }
+//     void mydelay() {
+//         int n;
+//         for (n = 1; n < 4000; ++n) { //TH: Count to 4000 ?
+//         }
+//     }
 
-}; //TH:---^^^---
+// }; //TH:---^^^---
 
 // uint8_t nunchuk_data[6]; //TH:Switched to external struct
 // uint8_t nunchuk_cali[16]; //TH: Verkar inte behövas
