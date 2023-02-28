@@ -57,17 +57,17 @@ static byte vskip;
 byte vgaxfb[VGAX_HEIGHT*VGAX_BWIDTH];
 uint16_t no1 = 0; // Used as nameless temp-var to save RAM. (small loops, reading wheelPosition)
 
-//VSYNC interrupt
+//VSYNC interrupt (60Hz)
 ISR(TIMER1_OVF_vect) {
   aline=-1;
   vskip=SKIPLINES;
   vtimer++;
   rlinecnt=0; //TH:Reset Rasterline counter?
 
+    TheVGANunchuk.nunchuk_read();
   no1 += 1; //TH: Delay before reading Nunchuk
   if (no1 >250) {
     no1 = 0;
-    TheVGANunchuk.nunchuk_read();
 //    if (nunchuk_read()) {
 //      no1 = (nunchuk_buttonZ()); //TH: Button Z to start ball
 //         button2Status = nunchuk_buttonC(); //TH:

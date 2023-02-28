@@ -25,7 +25,7 @@ When you declare a variable or function as extern, you are telling the compiler 
 
 In the case of extern uint8_t nunchuk_data[6];, the extern keyword is telling the compiler that the definition of the variable nunchuk_data is located in another translation unit, and that the linker should be responsible for resolving the reference to this variable.
 */
-extern uint8_t nunchuk_data[6];
+extern uint8_t nunchuk_data[7]; //TH: 0-6 read från Nunchuck. 7=Busy Flag.
     // uint8_t nunchuk_data[6] = {}; //TH:(globally accessible) array of Nunchuk data
 
 // // Define data structure

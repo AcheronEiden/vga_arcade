@@ -49,16 +49,15 @@
 
 class NunChukData {
 public:
-    uint8_t* getNunChukData() { //TH: Return the Nunchuk data array
-        return nunchuk_data;
-    }
+    uint8_t* getNunChukData();      // Return the Nunchuk data array
 
-    static void nunchuk_init(); // Start wire and send init commands to Nunchuk
-
-    uint8_t nunchuk_read(); // Read a full chunk of data from Nunchuk. @return A boolean if the data transfer was successful
-
-    void mydelay();
+    static void mydelay();          // Just a simple delay of some kind, about 600us.
     
+    static void nunchuk_init();     // Start wire and send init commands to Nunchuk
+
+    uint8_t nunchuk_read();         // Read a full chunk of data from Nunchuk.
+                                    // @return A boolean if the data transfer was successful
+
     //Using the static keyword in a function declaration or definition can help reduce namespace pollution, by limiting the visibility of the function to only the source file where it is needed.
 }; //TH:---^^^---
 

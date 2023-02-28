@@ -12,7 +12,7 @@
 //#include <Wire.h> //TH: To use Wii-controller, uses 182B RAM
 //#include <I2C.h> //TH: To use Wii-controller, uses 2059-1884B= 175B RAM
 //TH: Setup Nunchuk data structure
-uint8_t nunchuk_data[6] = {};
+uint8_t nunchuk_data[7] = {};
 NunChukData TheNunchuk; // create an instance called 'TheNunchuk' of the class 'NunChukData'.
 //uint8_t* nunchuk_data_ptr = TheNunchuk.getNunChukData(); //TH: get a pointer to the array (NOT NEEDED WHEN USING "MyNunchuk.h")
 
@@ -115,7 +115,7 @@ void setup() {
    DDRB  = 0b00000011;          // B-pins DIR   0=inputs   PB1/D9=VSYNC, D8=VSYNC MONITOR
    PORTB = 0b00000001;          // B-pins where 1=Pullups  
 
-   DDRC  = 0b00110001;          // C-pins DIR   0=inputs   PC0=Buzzer, PC4=SDA, PC5=SCL
+   DDRC  = 0b00110011;          // C-pins DIR   0=inputs   PC0=Buzzer, PC1=DEBUG, PC4=SDA, PC5=SCL
    PORTC = 0b00000000;          // C-pins where 1=Pullups
 // PINC; // C-pins reads value
 
@@ -128,14 +128,6 @@ void setup() {
 
    vga.begin();
    randomSeed(1);               //TH:---vvv--- Using gcc-variables
-
-   //TH: Test if I2C are reacting
-//    for (n = 1; n < 200; ++n) {
-//       PORTC &= 0b11101111; // AND to zero bit 4 (SDA)
-// //      PORTC = (0b00010000 << 1);
-// //      PORTB = 1 ; // Red   00000001
-//       vga.delay(10);
-//    }
 
     // Initialize I2C library manually
    //  I2c.begin();
@@ -164,6 +156,18 @@ void setup() {
    Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz)
    // Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
    TheNunchuk.nunchuk_init(); //TH: Init the nunchuk
+
+   // Clear Nunchuck array
+   for (n = 0; n < 7; n++) {nunchuk_data[n] = 0;}
+
+   //TH: Test if I2C are reacting
+   // for (n = 1; n < 200000; ++n) {
+// PORTC ^= 2; //TH: Toggle portC bit 1 (signal A1)
+//       PORTC &= 0b11101111; // AND to zero bit 4 (SDA)
+// //      PORTC = (0b00010000 << 1);
+// //      PORTB = 1 ; // Red   00000001
+      // vga.delay(1);
+   // }
 
                                //TH:---^^^--- 
 }
