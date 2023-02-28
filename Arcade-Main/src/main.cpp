@@ -153,12 +153,14 @@ void setup() {
 
    //TH: Init Nunchuk
    Wire.begin(); //TH: To use Wii-controller
-   Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz)
-   // Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
+   // Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz) 7 bytes= ~700us read time
+   Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
+   // Wire.setTimeout(1000); //TH: from 'void Stream' ??
+   Wire.setWireTimeout(800, false); //TH: 'false' gives data on bus from Nunchuk, 'true' does not.
    TheNunchuk.nunchuk_init(); //TH: Init the nunchuk
 
    // Clear Nunchuck array
-   for (n = 0; n < 7; n++) {nunchuk_data[n] = 0;}
+   // for (n = 0; n < 7; n++) {nunchuk_data[n] = 0;}
 
    //TH: Test if I2C are reacting
    // for (n = 1; n < 200000; ++n) {
@@ -213,23 +215,28 @@ void processInputs() {
          // buttonStatus = 1;
 
 //         button2Status = nunchuk_buttonC(); //TH:
-      buttonStatus = !((nunchuk_data_ptr[5]) & 1);
+      buttonStatus = ((nunchuk_data_ptr[5]) & 1);
+      n = nunchuk_data_ptr[0]; //TH: Joystick X-Axis [7:0]
 //         n = nunchuk_joystickX(); // Read wheelPosition
          //n = nunchuk_accelX();
          //Serial.println(n);
          // m=(n/100);
-         s[0]=35;
-         s[1]=35;
-         s[2]=35;
-         vga.printSRAM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, s, 2, 54, 0);
 
+         //TH: Clear old digits
+         //printSRAM(byte *fnt, byte glyphscount, byte fntheight, byte hspace, byte vspace, const char *str, char dx, char dy, byte color);
+         vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 2,       53,      0);
+         vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 7,       53,      0);
+         vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 12,      53,      0);
+
+         //TH: Print tre digit value
          s[0]=(int(n/100))+48;
-         s[1]=int((n-(s[0]*100))/10)+48;
-         s[2]=57;
+         s[1]=int((n-(int(n/100))*100)/10)+48;
+         s[2]=48;
+         s[2]=(n%10)+48;
          // s[1]=((n-m*100)/10)+48;
          // s[2]=(n%10)+48;
          //String(n).toCharArray(s,3);
-         vga.printSRAM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, s, 2, 54, 1);
+         vga.printSRAM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, s, 2, 53, 3);
          padPosition = map(n, 255, 0, 1 + PadLenght, width - 1 - PadLenght); //TH: map(value, fromLow, fromHigh, toLow, toHigh)
          padPosition = width/2;
 //      }
@@ -433,17 +440,20 @@ void gameIni() {
 // ********************************* Game Start ************************************* 
 
 void loop() {
-  if (beginning == 0){ 
-     processInputs(); 
-     gameIni(); 
-     ballStart(); 
-     beginning = 1; 
-  }
-  processInputs(); 
+   if (beginning == 0){ 
+      processInputs(); 
+      gameIni(); 
+      ballStart(); 
+      beginning = 1; 
+   }
+
+   PORTC ^= 0b00000010; //TH: DEBUG Toggle portC bit 1 (signal A1)
+
+   processInputs(); 
  
-  if (padPosition != padPositionOld) {cancelPad(); drawPad();}
+   if (padPosition != padPositionOld) {cancelPad(); drawPad();}
   
-  ballCoordinates(); 
+   ballCoordinates(); 
   
    // if (button2Status == 0){ //TH: Check if sound should be toggled on/off
    //    if (sndwait == 0) {

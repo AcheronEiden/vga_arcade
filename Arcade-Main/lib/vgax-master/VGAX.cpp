@@ -64,19 +64,27 @@ ISR(TIMER1_OVF_vect) {
   vtimer++;
   rlinecnt=0; //TH:Reset Rasterline counter?
 
-    TheVGANunchuk.nunchuk_read();
-  no1 += 1; //TH: Delay before reading Nunchuk
-  if (no1 >250) {
-    no1 = 0;
-//    if (nunchuk_read()) {
-//      no1 = (nunchuk_buttonZ()); //TH: Button Z to start ball
-//         button2Status = nunchuk_buttonC(); //TH:
-//      buttonStatus = myData.nunchuk_data[6]
-//         n = nunchuk_joystickX(); // Read wheelPosition
-//    }
+  PORTC &= 0b11111101; //TH: DEBUG Reset  portC bit 1 (signal A1) ENTERING SAFE ZONE
+
+  no1 += 1; //TH: Delay 4s before beginning to read Nunchuk
+  if (no1 >200) {
+    no1 = 200;
+    // nunchuk_data[0] = 23; //TH: Simulate x-pos
+    // TheVGANunchuk.nunchuk_read();
+
+    if ( TheVGANunchuk.nunchuk_read() ) {
+      // no1 = (nunchuk_buttonZ()); //TH: Button Z to start ball
+      //   button2Status = nunchuk_buttonC(); //TH:
+      // buttonStatus = myData.nunchuk_data[6]
+      //   n = nunchuk_joystickX(); // Read wheelPosition
+    }
 
     //PORTC ^= 1; //TH: Toggle portA bit 0
   }
+
+  // PORTC &= 0b11111101; //TH: DEBUG Reset  portC bit 1 (signal A1)
+  // PORTC |= 0b00010000; //TH: DEBUG Set    portC bit 4 (signal SDA)
+  PORTC |= 0b00000010; //TH: DEBUG Set    portC bit 1 (signal A1) EXITING SAFE ZONE
 }
 //HSYNC interrupt
 ISR(TIMER2_OVF_vect) {
