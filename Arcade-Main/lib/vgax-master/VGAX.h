@@ -56,6 +56,8 @@ HERE you can find some inline documentation about the VGAX library class
 #define VGAX_BSIZE (VGAX_BWIDTH*VGAX_HEIGHT) //size of framebuffer in bytes
 #define VGAX_SIZE (VGAX_WIDTH*VGAX_HEIGHT) //size of framebuffer in pixels
 
+extern uint8_t blank; //TH: 1=In safe blanking zone
+
 //framebuffer. if you want you can write directly to this array. its safe
 extern byte vgaxfb[VGAX_HEIGHT*VGAX_BWIDTH];
 

@@ -57,6 +57,7 @@ static byte afreq, afreq0;
 unsigned long vtimer;
 static byte aline, rlinecnt;
 static byte vskip;
+uint8_t blank = 0; //TH: 0=In safe blanking zone
 byte vgaxfb[VGAX_HEIGHT*VGAX_BWIDTH];
 
 //VSYNC interrupt (60Hz)
@@ -66,6 +67,7 @@ ISR(TIMER1_OVF_vect) {
   vtimer++;
   rlinecnt=0; //TH:Reset Rasterline counter?
 
+  blank = 0; //TH: Set safe zone flag
   PORTC |= 0b00000010; //TH: DEBUG Set    portC bit 1 (signal A1) ENTERING SAFE ZONE
     // PORTC &= 0b11111101; //TH: DEBUG Reset  portC bit 1 (signal A1) ENTERING SAFE ZONE
 
@@ -232,6 +234,7 @@ ISR(TIMER2_OVF_vect) {
       rlinecnt++;
       //TH: Check if safe zone is done
       if (rlinecnt>0) {
+        blank = 250; //TH: Clear safe zone flag
         PORTC &= 0b11111101; //TH: DEBUG Reset  portC bit 1 (signal A1) EXITING SAFE ZONE
         // PORTC |= 0b00000010; //TH: DEBUG Set    portC bit 1 (signal A1) EXITING SAFE ZONE
       }

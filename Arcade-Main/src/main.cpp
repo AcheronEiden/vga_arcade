@@ -223,92 +223,80 @@ void processInputs() {
 
    //TH: Use Wii-controller if present, otherwise use analog potentiometer
    n=0; //TH: If nunchuk read fails, set idle position
-   m++;
+   // m++;
 
-   if (m>100) {
+   // if (m>00) {
 
-   //TH: Wait to enter safe zone
-   // if ((PORTC & (1 << 1))) {
-   //    asm("nop");
-   //    PORTC &= 0b11011111; //TH: DEBUG Reset  portC bit 4 (signal SCL)
+      //TH: Wait to enter safe zone
+      //          (   2  )
+      //  PORTC & (1 << 1)
+
+      // while (1==1) {
+      // if (blank) {
+      //    PORTB |= 0b00000001; //TH: DEBUG Set   portB bit 0 (Extra debug, "röd över")
+      // } else {
+      //    PORTB &= 0b11111110; //TH: DEBUG Clear portB bit 0 (Extra debug, "röd över")
+      // }
+      // }
+
+      // PORTB &= 0b11111110; //TH: DEBUG Clear portB bit 0 (Extra debug, "röd över")
+      // m=0;
+      // while ( !(blank) & (m<65000) ) {
+      //    m++;
+      //  }
+      // PORTB |= 0b00000001; //TH: DEBUG Set   portB bit 0 (Extra debug, "röd över")
+
+
+      // while ( ( blank )) {
+      //    asm("nop");
+      //    // PORTB ^= 0b00000001; //TH: DEBUG Toggle portB bit 0 (Extra debug, "röd över")
+      // }
+      // delayNOP(100);
+      // PORTB &= 0b11111110; //TH: DEBUG Clear portB bit 0 (Extra debug, "röd över")
+
+      // PORTC &= 0b11011111; //TH: DEBUG Reset  portC bit 5 (signal SCL)
+      // PORTC |= 0b00100000; //TH: DEBUG Set    portC bit 5 (signal SCL)
+      // PORTC ^= 0b00100000; //TH: DEBUG Toggle portC bit 5 (signal SCL)
+      // PORTC &= 0b11101111; //TH: DEBUG Reset  portC bit 4 (signal SDA)
+      // PORTC |= 0b00010000; //TH: DEBUG Set    portC bit 4 (signal SDA)
+
+      // DDRB  |= 0b00000001; //TH: DEBUG Set    portB bit 0 (Extra debug, "röd över") 1=OUTPUT
+      // PORTB |= 0b00000001; //TH: DEBUG Set portB bit 0 (Extra debug, "röd över")
+
+      // if (PORTC & (1 << 1)) { //TH: performs a bitwise AND operation between the PORTC register and a mask consisting of a 1 bit shifted left 1 positions, effectively isolating the bit 1 of the PORTC register. The resulting value will be non-zero if the bit is set and zero if the bit is clear.
+
+      // TRY 3
+      if (blank<1) {
+         blank=1;
+         if ( nunchuk_read() ) {
+            buttonStatus = (nunchuk_buttonZ());
+            n = nunchuk_joystickX()+127;
+            //TH: int mappedValue = map(value, fromLow, fromHigh, toLow, toHigh);
+            padPosition = map(n, 0, 255, 1+PadLenght, width-1-PadLenght);
+         }
+      }
+
+      // //TH: Clear old digits
+      // //printSRAM(byte *fnt, byte glyphscount, byte fntheight, byte hspace, byte vspace, const char *str, char dx, char dy, byte color);
+      // vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 2,       42,      0);
+      // vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 7,       42,      0);
+      // vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 12,      42,      0);
+
+      // //TH: Print tre digit value
+      // // n=padPosition;
+      // s[0]=(int(n/100))+48;
+      // s[1]=int((n-(int(n/100))*100)/10)+48;
+      // s[2]=(n%10)+48;
+      // // s[1]=((n-m*100)/10)+48;
+      // // s[2]=(n%10)+48;
+      // //String(n).toCharArray(s,3);
+      // vga.printSRAM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, s, 2, 42, 3);
+
+      // if (!(PORTC & (1 << 1))) {} //TH: Wait to exit safe zone
+      // if ((PORTC & (1 << 1))) {} //TH: Wait to exit safe zone
+
+   //    m=0;
    // }
-   // PORTC &= 0b11011111; //TH: DEBUG Reset  portC bit 5 (signal SCL)
-   // PORTC |= 0b00100000; //TH: DEBUG Set    portC bit 5 (signal SCL)
-   PORTC ^= 0b00100000; //TH: DEBUG Toggle portC bit 5 (signal SCL)
-   PORTC &= 0b11101111; //TH: DEBUG Reset  portC bit 4 (signal SDA)
-   PORTC |= 0b00010000; //TH: DEBUG Set    portC bit 4 (signal SDA)
-
-   DDRB  |= 0b00000001; //TH: DEBUG Set    portB bit 0 (Extra debug, "röd över") 1=OUTPUT
-   PORTB ^= 0b00000001; //TH: DEBUG Toggle portB bit 0 (Extra debug, "röd över")
-
-   // if (PORTC & (1 << 1)) { //TH: performs a bitwise AND operation between the PORTC register and a mask consisting of a 1 bit shifted left 1 positions, effectively isolating the bit 1 of the PORTC register. The resulting value will be non-zero if the bit is set and zero if the bit is clear.
-
-   // NunChukData nunchuk; // create an instance called 'nunchuk' of the class 'NunChukData'.
-   // uint8_t* nunchuk_data_ptr = nunchuk.getNunChukData(); // get a pointer to the array
-   // uint8_t first_byte_method1 = *data_ptr; // get the first byte of the array
-   // uint8_t second_byte_method1 = *(data_ptr + 1); // get the second byte of the array
-   // uint8_t first_byte_method2 = data_ptr[0]; // get the first byte of the array
-
-   // TRY 3
-   // if ( nunchuk_read() ) {
-   //    buttonStatus = (nunchuk_buttonZ());
-   //    n = nunchuk_joystickX();
-   // }
-   //TH: int mappedValue = map(value, fromLow, fromHigh, toLow, toHigh);
-   padPosition = map(n, 0, 255, 1+PadLenght, width-1-PadLenght);
-
-   // TRY 2
-   // TheNunchuk2.update();
-   // n=TheNunchuk2.getXStick()+2;
-   // buttonStatus = 1;
-
-      //TH: get the Nunchuk data, ALMOST WORKED
-   //   uint8_t* nunchuk_data_ptr = TheNunchuk.getNunChukData();
-
-      //TH: access the data using pointer arithmetic
-//      buttonStatus = (nunchuk_data_ptr[5]) & 1; // button z
-      // uint8_t joy_x = *(data + 0);
-      // uint8_t joy_y = *(data + 1);
-      // uint8_t accel_x = *(data + 2);
-      // uint8_t accel_y = *(data + 3);
-      // uint8_t accel_z = *(data + 4);
-      // uint8_t button_z = (*(data + 5) >> 0) & 1;
-      // uint8_t button_c = (*(data + 5) >> 1) & 1;
-
-//      if (nunchuk_read()) {
-      //   buttonStatus = (nunchuk_buttonZ()); //TH: Button Z to start ball
-         // buttonStatus = 1;
-
-//         button2Status = nunchuk_buttonC(); //TH:
-      // buttonStatus = ((nunchuk_data_ptr[5]) & 1); //TH: ALMOST WORKED
-      // n = nunchuk_data_ptr[0]; //TH: Joystick X-Axis [7:0] //TH: ALMOST WORKED
-//         n = nunchuk_joystickX(); // Read wheelPosition
-         //n = nunchuk_accelX();
-         //Serial.println(n);
-         // m=(n/100);
-
-         //TH: Clear old digits
-         //printSRAM(byte *fnt, byte glyphscount, byte fntheight, byte hspace, byte vspace, const char *str, char dx, char dy, byte color);
-         vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 2,       52,      0);
-         vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 7,       52,      0);
-         vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 12,      52,      0);
-
-         //TH: Print tre digit value
-         // n=padPosition;
-         s[0]=(int(n/100))+48;
-         s[1]=int((n-(int(n/100))*100)/10)+48;
-         s[2]=(n%10)+48;
-         // s[1]=((n-m*100)/10)+48;
-         // s[2]=(n%10)+48;
-         //String(n).toCharArray(s,3);
-         vga.printSRAM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, s, 2, 52, 3);
-
-   // if (!(PORTC & (1 << 1))) {} //TH: Wait to exit safe zone
-   // if ((PORTC & (1 << 1))) {} //TH: Wait to exit safe zone
-
-//      }
-      m=0;
-   }
 
    // } else {
    //    buttonStatus = !(digitalRead(BUTTON_PIN)); //TH: Changed to active low 
@@ -316,9 +304,9 @@ void processInputs() {
    //    wheelPosition = analogRead(WHEEL_PIN);
    //    padPosition = map(wheelPosition, 1023, 0, 1 + PadLenght, width - 1 - PadLenght);
 
-}
+// }
 
-void drawDebug() {
+// void drawDebug() {
    
 };
 
