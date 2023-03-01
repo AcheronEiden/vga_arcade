@@ -6,18 +6,25 @@
 */
 
 #include <avr/io.h> //TH: To set IO pins using C
-#include <MyNunchuk.h> //TH: External data structure to share Nunchuk data
-//#include <Nunchuck.h> //TH: To use Wii-controller, uses ?B RAM
-#include <Nunchuk.h> //TH: To use Wii-controller, uses 35B RAM
+#include <math.h>
+#include <Arduino.h>
+// #include <MyNunchuk.h> //TH: External data structure to share Nunchuk data
+//#include <Nunchuk.h> //TH: To use Wii-controller, uses 35B RAM
 //#include <Wire.h> //TH: To use Wii-controller, uses 182B RAM
 //#include <I2C.h> //TH: To use Wii-controller, uses 2059-1884B= 175B RAM
 //TH: Setup Nunchuk data structure
-uint8_t nunchuk_data[7] = {};
-NunChukData TheNunchuk; // create an instance called 'TheNunchuk' of the class 'NunChukData'.
+// uint8_t nunchuk_data[7] = {};
+//NunChukData TheNunchuk; // create an instance called 'TheNunchuk' of the class 'NunChukData'.
 //uint8_t* nunchuk_data_ptr = TheNunchuk.getNunChukData(); //TH: get a pointer to the array (NOT NEEDED WHEN USING "MyNunchuk.h")
 
+// Try 2
+// #include <Nunchuck.h> //TH: To use Wii-controller, uses 225B RAM
+// NunchuckInterface TheNunchuk2; // create an instance called 'TheNunchuk2' of the class 'NunchuckInterface'.
+
+// Try 3
+#include <Nunchuk.h> //TH: To use Wii-controller, uses 225B RAM
+
 #include <VGAX.h>
-#include <math.h>
 #define FNT_NANOFONT_HEIGHT 6
 #define FNT_NANOFONT_SYMBOLS_COUNT 95
 #include <VGAFont4x6.h>
@@ -60,19 +67,28 @@ const unsigned char PS_128 = (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
                                //TH:---^^^--- 
 // ************* Variable definition ***************************************
 boolean buttonStatus = 0;
-boolean button2Status = 0; //TH: Added for sound control on/off
-int n; //TH: Used as nameless temp-var to save RAM. (small loops, reading wheelPosition)
-int m = 0; //TH: Used to skip calls to nunchuk read to save process time
+// boolean button2Status = 0; //TH: Added for sound control on/off
+uint8_t n; //TH: Used as nameless temp-var to save RAM. (small loops, reading wheelPosition)
+uint16_t m = 0; //TH: Used to skip calls to nunchuk read to save process time
 char s[]="000";
 
+struct MyFlags { //TH: define struct to hold boolean that only occupy ONE BIT each to save RAM
+  uint8_t cancelSafe : 1;
+  uint8_t beginning : 1;
+  uint8_t color : 2;
+  uint8_t flag4 : 1;
+};
+MyFlags flags; // Declare an object of type MyFlags called flags
+
 //int wheelPosition; 
-int padPosition; 
-int padPositionOld; 
-const int PadLenght = 6; 
-int ballX = 70;
-int ballY = 30; 
-int ballXold;
-int ballYold; 
+uint8_t padPosition; 
+uint8_t padPositionOld; 
+// const int PadLenght = 6; 
+#define PadLenght 6 
+uint8_t ballX = 70;
+uint8_t ballY = 30; 
+uint8_t ballXold;
+uint8_t ballYold; 
 float ballFX = 70.;
 float ballFY = 30.;
 float speedX = .03/1.414;
@@ -80,27 +96,26 @@ float speedY = .03/1.414;
 float speedT = .03; 
 float angle; 
 float angleDeg = 45.; 
-int lenght = 5; // **************** real brick lenght = lenght*2 + 1 
-int gameStep = 0; 
-int cancelSafe = 0;
-int hitScore = 0; 
-int width = 100;
-int height = 60; 
-int lives = 9; 
-int distanceX;
-int distanceY; 
-int distanceXmin;
-int distanceYmin; 
-int iDel;
-int jDel; 
-int rowBricks = 7; 
-int ballXhit; 
-int ballYhit; 
+uint8_t lenght = 5; // **************** real brick lenght = lenght*2 + 1 
+uint8_t gameStep = 0; 
+uint8_t hitScore = 0; 
+uint8_t width = 100;
+uint8_t height = 60; 
+uint8_t lives = 9; 
+uint8_t distanceX;
+uint8_t distanceY; 
+uint8_t distanceXmin;
+uint8_t distanceYmin; 
+uint8_t iDel;
+uint8_t jDel; 
+uint8_t rowBricks = 7; 
+uint8_t ballXhit; 
+uint8_t ballYhit; 
 const float pi = 3.1415296;
-int nBricks = 0;
-int color; 
+uint8_t nBricks = 0;
+// uint8_t color; 
 const float speedIncrement = 1.25992105; 
-int beginning = 0; 
+uint8_t beginning = 0; 
 
 //--- SOUND ------------------------------------------
 void toneL(int frequency, int duration) {
@@ -112,19 +127,33 @@ void toneL(int frequency, int duration) {
 }
 
 void setup() {
-   DDRB  = 0b00000011;          // B-pins DIR   0=inputs   PB1/D9=VSYNC, D8=VSYNC MONITOR
-   PORTB = 0b00000001;          // B-pins where 1=Pullups  
+   //TH: Setup and init Nunchuk (TRY 3)
+   Wire.begin(); //TH: To use Wii-controller
+   Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
+   // Wire.setWireTimeout(800, false); //TH: 'false' gives data on bus from Nunchuk, 'true' does not.
+   nunchuk_init(); //TH: Init the nunchuk
 
-   DDRC  = 0b00110011;          // C-pins DIR   0=inputs   PC0=Buzzer, PC1=DEBUG, PC4=SDA, PC5=SCL
-   PORTC = 0b00000000;          // C-pins where 1=Pullups
-// PINC; // C-pins reads value
+   //TH: Assign values to bit fields
+   flags.cancelSafe = 0;
+   flags.beginning = 0;
 
-   DDRD  = 0b11101000;          // D-pins DIR   0=inputs   D3=HSYNC, D6-D7=R+G
-   PORTD = 0b00000000;          // D-pins where 1=Pullups
+   //TH: Setup ports using raw C++ punch
+   DDRB  |= 0b00000001; //TH: DEBUG Set    portB bit 0 (Extra debug, "röd över") 1=OUTPUT
+   PORTB |= 0b00000001; //TH: DEBUG Set    portB bit 0 (Extra debug, "röd över")
 
-                                 // set up the ADC
-   ADCSRA &= ~PS_128;           // remove bits set by Arduino library
-   ADCSRA |= PS_4;              // set our own prescaler to 4. N.B. PS_2 does not work!!!
+//    DDRB  = 0b00000011;          // B-pins DIR   0=inputs   PB1/D9=VSYNC, D8=VSYNC MONITOR
+//    PORTB = 0b00000000;          // B-pins where 1=Pullups  
+
+//    DDRC  = 0b00110011;          // C-pins DIR   0=inputs   PC0=Buzzer, PC1=DEBUG, PC4=SDA, PC5=SCL
+//    PORTC = 0b00000000;          // C-pins where 1=Pullups
+// // PINC; // C-pins reads value
+
+//    DDRD  = 0b11101000;          // D-pins DIR   0=inputs   D3=HSYNC, D6-D7=R+G
+//    PORTD = 0b00000000;          // D-pins where 1=Pullups
+
+//                                  // set up the ADC
+//    ADCSRA &= ~PS_128;           // remove bits set by Arduino library
+//    ADCSRA |= PS_4;              // set our own prescaler to 4. N.B. PS_2 does not work!!!
 
    vga.begin();
    randomSeed(1);               //TH:---vvv--- Using gcc-variables
@@ -144,20 +173,23 @@ void setup() {
 
 //Serial.begin(115200);
 
-   //TH: Setup and init Nunchuk
+   //TH: Setup and init Nunchuk (TRY 2)
+   // TheNunchuk2.begin();
+
+   //TH: Setup and init Nunchuk (SLASK DATA)
    // NunChukData nunchuk; // create an instance called 'nunchuk' of the class 'NunChukData'.
    // uint8_t* nunchuk_data_ptr = nunchuk.getNunChukData(); // get a pointer to the array
    // uint8_t first_byte_method1 = *data_ptr; // get the first byte of the array
    // uint8_t second_byte_method1 = *(data_ptr + 1); // get the second byte of the array
    // uint8_t first_byte_method2 = data_ptr[0]; // get the first byte of the array
 
-   //TH: Init Nunchuk
-   Wire.begin(); //TH: To use Wii-controller
-   // Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz) 7 bytes= ~700us read time
-   Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
-   // Wire.setTimeout(1000); //TH: from 'void Stream' ??
-   Wire.setWireTimeout(800, false); //TH: 'false' gives data on bus from Nunchuk, 'true' does not.
-   TheNunchuk.nunchuk_init(); //TH: Init the nunchuk
+   //TH: Init Nunchuk (ALMOST WORKED)
+   // Wire.begin(); //TH: To use Wii-controller
+   // // Wire.setClock(100000); //TH: Change TWI speed for nuchuk, which uses TWI (100kHz) 7 bytes= ~700us read time
+   // Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
+   // // Wire.setTimeout(1000); //TH: from 'void Stream' ??
+   // Wire.setWireTimeout(800, false); //TH: 'false' gives data on bus from Nunchuk, 'true' does not.
+   // TheNunchuk.nunchuk_init(); //TH: Init the nunchuk
 
    // Clear Nunchuck array
    // for (n = 0; n < 7; n++) {nunchuk_data[n] = 0;}
@@ -171,6 +203,10 @@ void setup() {
       // vga.delay(1);
    // }
 
+   //TH: Setup and init Nunchuk (TRY 3)
+   Wire.begin(); //TH: To use Wii-controller
+   Wire.setClock(400000); //TH: Change TWI speed for nuchuk, which uses Fast-TWI (400kHz)
+   // Wire.setWireTimeout(800, false); //TH: 'false' gives data on bus from Nunchuk, 'true' does not.
                                //TH:---^^^--- 
 }
 
@@ -189,7 +225,23 @@ void processInputs() {
    n=0; //TH: If nunchuk read fails, set idle position
    m++;
 
-   if (m>500) {
+   if (m>100) {
+
+   //TH: Wait to enter safe zone
+   // if ((PORTC & (1 << 1))) {
+   //    asm("nop");
+   //    PORTC &= 0b11011111; //TH: DEBUG Reset  portC bit 4 (signal SCL)
+   // }
+   // PORTC &= 0b11011111; //TH: DEBUG Reset  portC bit 5 (signal SCL)
+   // PORTC |= 0b00100000; //TH: DEBUG Set    portC bit 5 (signal SCL)
+   PORTC ^= 0b00100000; //TH: DEBUG Toggle portC bit 5 (signal SCL)
+   PORTC &= 0b11101111; //TH: DEBUG Reset  portC bit 4 (signal SDA)
+   PORTC |= 0b00010000; //TH: DEBUG Set    portC bit 4 (signal SDA)
+
+   DDRB  |= 0b00000001; //TH: DEBUG Set    portB bit 0 (Extra debug, "röd över") 1=OUTPUT
+   PORTB ^= 0b00000001; //TH: DEBUG Toggle portB bit 0 (Extra debug, "röd över")
+
+   // if (PORTC & (1 << 1)) { //TH: performs a bitwise AND operation between the PORTC register and a mask consisting of a 1 bit shifted left 1 positions, effectively isolating the bit 1 of the PORTC register. The resulting value will be non-zero if the bit is set and zero if the bit is clear.
 
    // NunChukData nunchuk; // create an instance called 'nunchuk' of the class 'NunChukData'.
    // uint8_t* nunchuk_data_ptr = nunchuk.getNunChukData(); // get a pointer to the array
@@ -197,8 +249,21 @@ void processInputs() {
    // uint8_t second_byte_method1 = *(data_ptr + 1); // get the second byte of the array
    // uint8_t first_byte_method2 = data_ptr[0]; // get the first byte of the array
 
-      //TH: get the Nunchuk data
-     uint8_t* nunchuk_data_ptr = TheNunchuk.getNunChukData();
+   // TRY 3
+   // if ( nunchuk_read() ) {
+   //    buttonStatus = (nunchuk_buttonZ());
+   //    n = nunchuk_joystickX();
+   // }
+   //TH: int mappedValue = map(value, fromLow, fromHigh, toLow, toHigh);
+   padPosition = map(n, 0, 255, 1+PadLenght, width-1-PadLenght);
+
+   // TRY 2
+   // TheNunchuk2.update();
+   // n=TheNunchuk2.getXStick()+2;
+   // buttonStatus = 1;
+
+      //TH: get the Nunchuk data, ALMOST WORKED
+   //   uint8_t* nunchuk_data_ptr = TheNunchuk.getNunChukData();
 
       //TH: access the data using pointer arithmetic
 //      buttonStatus = (nunchuk_data_ptr[5]) & 1; // button z
@@ -215,8 +280,8 @@ void processInputs() {
          // buttonStatus = 1;
 
 //         button2Status = nunchuk_buttonC(); //TH:
-      buttonStatus = ((nunchuk_data_ptr[5]) & 1);
-      n = nunchuk_data_ptr[0]; //TH: Joystick X-Axis [7:0]
+      // buttonStatus = ((nunchuk_data_ptr[5]) & 1); //TH: ALMOST WORKED
+      // n = nunchuk_data_ptr[0]; //TH: Joystick X-Axis [7:0] //TH: ALMOST WORKED
 //         n = nunchuk_joystickX(); // Read wheelPosition
          //n = nunchuk_accelX();
          //Serial.println(n);
@@ -224,21 +289,23 @@ void processInputs() {
 
          //TH: Clear old digits
          //printSRAM(byte *fnt, byte glyphscount, byte fntheight, byte hspace, byte vspace, const char *str, char dx, char dy, byte color);
-         vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 2,       53,      0);
-         vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 7,       53,      0);
-         vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 12,      53,      0);
+         vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 2,       52,      0);
+         vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 7,       52,      0);
+         vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str10, 12,      52,      0);
 
          //TH: Print tre digit value
+         // n=padPosition;
          s[0]=(int(n/100))+48;
          s[1]=int((n-(int(n/100))*100)/10)+48;
-         s[2]=48;
          s[2]=(n%10)+48;
          // s[1]=((n-m*100)/10)+48;
          // s[2]=(n%10)+48;
          //String(n).toCharArray(s,3);
-         vga.printSRAM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, s, 2, 53, 3);
-         padPosition = map(n, 255, 0, 1 + PadLenght, width - 1 - PadLenght); //TH: map(value, fromLow, fromHigh, toLow, toHigh)
-         padPosition = width/2;
+         vga.printSRAM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, s, 2, 52, 3);
+
+   // if (!(PORTC & (1 << 1))) {} //TH: Wait to exit safe zone
+   // if ((PORTC & (1 << 1))) {} //TH: Wait to exit safe zone
+
 //      }
       m=0;
    }
@@ -250,6 +317,10 @@ void processInputs() {
    //    padPosition = map(wheelPosition, 1023, 0, 1 + PadLenght, width - 1 - PadLenght);
 
 }
+
+void drawDebug() {
+   
+};
 
 //TH: declare prototypes needed in C99
 void gameOver();
@@ -356,9 +427,9 @@ void drawBricksGrid(int n) {
   {   
     for (int i = 1; i <= int(width/(2*lenght + 3) - 1); i++) {
       for (int j = 1; j < rowBricks - 2; j++) {
-         color = (i + j)%3 + 1; 
-         brick(2 + 1 + lenght + i*2*(lenght + 1), 1 + 2 + j*2*2, color); 
-         if (color |= 0) {nBricks++;}
+         flags.color = (i + j)%3 + 1; 
+         brick(2 + 1 + lenght + i*2*(lenght + 1), 1 + 2 + j*2*2, flags.color); 
+         if (flags.color |= 0) {nBricks++;}
       }
     }
   }
@@ -366,9 +437,9 @@ void drawBricksGrid(int n) {
   {   
     for (int i = 0; i <= int(width/(2*lenght + 3)); i++) {
       for (int j = 0; j < rowBricks; j++) {
-         color = (i + j)%4 + 0; 
-         brick(2 + 1 + lenght + i*2*(lenght + 1), 1 + 2 + j*2*2, color); 
-         if (color |= 0) {nBricks++;}
+         flags.color = (i + j)%4 + 0; 
+         brick(2 + 1 + lenght + i*2*(lenght + 1), 1 + 2 + j*2*2, flags.color); 
+         if (flags.color |= 0) {nBricks++;}
       }
     }
   }
@@ -376,9 +447,9 @@ void drawBricksGrid(int n) {
   {   
     for (int i = 0; i <= int(width/(2*lenght + 3)); i++) {
       for (int j = 0; j < rowBricks; j++) {
-         color = (i + j)%3 + 1; 
-         brick(2 + 1 + lenght + i*2*(lenght + 1), 1 + 2 + j*2*2, color); 
-         if (color |= 0) {nBricks++;}
+         flags.color = (i + j)%3 + 1; 
+         brick(2 + 1 + lenght + i*2*(lenght + 1), 1 + 2 + j*2*2, flags.color); 
+         if (flags.color |= 0) {nBricks++;}
       }
     }
   }
@@ -428,7 +499,6 @@ void gameIni() {
   lives = 9;
   speedT = .03; 
   gameStep = 0; 
-  beginning = 0; //TH: Fixed mistype
   angleDeg = 180/4; 
   parameterUpdate(); 
   drawLives(); 
@@ -440,47 +510,26 @@ void gameIni() {
 // ********************************* Game Start ************************************* 
 
 void loop() {
-   if (beginning == 0){ 
+   if (flags.beginning == 0){ 
       processInputs(); 
       gameIni(); 
       ballStart(); 
-      beginning = 1; 
+      flags.beginning = 1; 
    }
 
-   PORTC ^= 0b00000010; //TH: DEBUG Toggle portC bit 1 (signal A1)
+   // PORTC ^= 0b00000010; //TH: DEBUG Toggle portC bit 1 (signal A1)
 
    processInputs(); 
  
    if (padPosition != padPositionOld) {cancelPad(); drawPad();}
   
    ballCoordinates(); 
-  
-   // if (button2Status == 0){ //TH: Check if sound should be toggled on/off
-   //    if (sndwait == 0) {
-   //       if (snd == 0) {
-   //          snd = 1; //TH: Temp turn on sound to indicate the sound is turned off
-   //          toneL(800, 30);
-   //          toneL(600, 30);
-   //          toneL(400, 30);
-   //          snd = 0;
-   //       } else {
-   //          toneL(200, 30);
-   //          toneL(100, 30);
-   //          toneL(150, 50);
-   //       }
-   //       snd = !snd;
-   //       sndwait = 1; //TH: Wait for release of button 2
-   //    }
-   // }
-   // if (button2Status == 1){ //TH: Wait for release of button 2
-   //    sndwait = 0; //TH: Button 2 is released
-   // }
 
   //TH: Fixed paranthesis around OR operand
   if ( (ballX != ballXold) | (ballY != ballYold) ) { 
-     if (cancelSafe == 0) {
+     if (flags.cancelSafe == 0) {
         drawBall(ballXold, ballYold, 0); 
-        cancelSafe = 1; 
+        flags.cancelSafe = 1; 
      }
      if (vga.getpixel(ballX, ballY) != 0) {hitScore += 1;}
      if (vga.getpixel(ballX + 1, ballY) != 0) {hitScore += 2;}
@@ -489,7 +538,7 @@ void loop() {
      if (hitScore == 0) // *************************************** ball did not hit anything and can go ahead ************
      {
         drawBall(ballX, ballY, 2); 
-        cancelSafe = 0; 
+        flags.cancelSafe = 0; 
      }
      else // ******************************* ball has hit something  ***********************
      {
@@ -529,7 +578,7 @@ void loop() {
               }
               drawLives(); 
               ballStart(); 
-              cancelSafe = 0; 
+              flags.cancelSafe = 0; 
               speedY = - abs(speedY); 
            }
         }

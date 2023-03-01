@@ -11,9 +11,12 @@
 #include "VGAX.h"
 #define VGAX_DEV_DEPRECATED 1
 #include <avr/io.h> //TH: To set IO pins using C
-//#include <MyNunchuk.h> //TH: External data structure to share Nunchuk data
-#include <Nunchuk.h> //TH: To use Wii-controller, uses ?B RAM
-NunChukData TheVGANunchuk; // create an instance called 'TheVGANunchuk' of the class 'NunChukData'.
+// #include <MyNunchuk.h> //TH: External data structure to share Nunchuk data
+// #include <Nunchuk.h> //TH: To use Wii-controller, uses ?B RAM
+// NunChukData TheVGANunchuk; // create an instance called 'TheVGANunchuk' of the class 'NunChukData'.
+// Try 2
+// #include <Nunchuck.h> //TH: To use Wii-controller, uses ?B RAM
+// NunchuckInterface TheVGANunchuk2; // create an instance called 'TheVGANunchuk2' of the class 'NunchuckInterface'.
 
 //HSYNC pin used by TIMER2
 #if defined(__AVR_ATmega2560__)
@@ -55,7 +58,6 @@ unsigned long vtimer;
 static byte aline, rlinecnt;
 static byte vskip;
 byte vgaxfb[VGAX_HEIGHT*VGAX_BWIDTH];
-uint16_t no1 = 0; // Used as nameless temp-var to save RAM. (small loops, reading wheelPosition)
 
 //VSYNC interrupt (60Hz)
 ISR(TIMER1_OVF_vect) {
@@ -64,28 +66,27 @@ ISR(TIMER1_OVF_vect) {
   vtimer++;
   rlinecnt=0; //TH:Reset Rasterline counter?
 
-  PORTC &= 0b11111101; //TH: DEBUG Reset  portC bit 1 (signal A1) ENTERING SAFE ZONE
+  PORTC |= 0b00000010; //TH: DEBUG Set    portC bit 1 (signal A1) ENTERING SAFE ZONE
+    // PORTC &= 0b11111101; //TH: DEBUG Reset  portC bit 1 (signal A1) ENTERING SAFE ZONE
 
-  no1 += 1; //TH: Delay 4s before beginning to read Nunchuk
-  if (no1 >200) {
-    no1 = 200;
     // nunchuk_data[0] = 23; //TH: Simulate x-pos
     // TheVGANunchuk.nunchuk_read();
 
-    if ( TheVGANunchuk.nunchuk_read() ) {
+    // TheVGANunchuk2.update();
+
+    // if ( TheVGANunchuk.nunchuk_read() ) { //TH: ALMOST WORKED
       // no1 = (nunchuk_buttonZ()); //TH: Button Z to start ball
       //   button2Status = nunchuk_buttonC(); //TH:
       // buttonStatus = myData.nunchuk_data[6]
       //   n = nunchuk_joystickX(); // Read wheelPosition
-    }
+    // }
 
-    //PORTC ^= 1; //TH: Toggle portA bit 0
-  }
-
+  // PORTC ^= 1; //TH: Toggle portA bit 0
   // PORTC &= 0b11111101; //TH: DEBUG Reset  portC bit 1 (signal A1)
   // PORTC |= 0b00010000; //TH: DEBUG Set    portC bit 4 (signal SDA)
-  PORTC |= 0b00000010; //TH: DEBUG Set    portC bit 1 (signal A1) EXITING SAFE ZONE
+  // PORTC |= 0b00000010; //TH: DEBUG Set    portC bit 1 (signal A1) EXITING SAFE ZONE
 }
+
 //HSYNC interrupt
 ISR(TIMER2_OVF_vect) {
   /*
@@ -229,6 +230,11 @@ ISR(TIMER2_OVF_vect) {
     if (++aline==CLONED_LINES) { 
       aline=-1;
       rlinecnt++;
+      //TH: Check if safe zone is done
+      if (rlinecnt>0) {
+        PORTC &= 0b11111101; //TH: DEBUG Reset  portC bit 1 (signal A1) EXITING SAFE ZONE
+        // PORTC |= 0b00000010; //TH: DEBUG Set    portC bit 1 (signal A1) EXITING SAFE ZONE
+      }
     } else {
       #ifdef VGAX_DEV_DEPRECATED //TH: Activated this line for HSYNC control
       //small delay to keep the line signal aligned
@@ -241,13 +247,14 @@ ISR(TIMER2_OVF_vect) {
     }
   } 
 }
+
 void VGAX::begin(bool enableTone) {
   //Timers setup code, modified version of the Nick Gammon's VGA sketch
   cli();
   //setup audio pin
   if (enableTone) {
     pinMode(A0, OUTPUT);
-    pinMode(A0, INPUT); //TH: Mute audio, but still use VGAX output. Two lines of same gave stable video when beeping...
+    // pinMode(A0, INPUT); //TH: Mute audio, but still use VGAX output. Two lines of same gave stable video when beeping...
   }
   //disable TIMER0 interrupt
   TIMSK0=0;
@@ -286,6 +293,7 @@ void VGAX::begin(bool enableTone) {
   pinMode(COLORPIN1, OUTPUT);  
   sei();
 }
+
 void VGAX::end() {
   //disable TIMER0
   TCCR0A=0;
@@ -297,6 +305,7 @@ void VGAX::end() {
   TCCR2A=0;
   TCCR2B=0;
 }
+
 void VGAX::clear(byte color) {
   register byte c=color;
   c&=3;
@@ -304,12 +313,14 @@ void VGAX::clear(byte color) {
   c0|=c0*16;
   memset(vgaxfb, c0, VGAX_BSIZE);
 }
+
 void VGAX::copy(byte *src) {
   byte *o=(byte*)vgaxfb;
   unsigned cnt=VGAX_BSIZE;
   while (cnt--)
     *o++=pgm_read_byte(src++);
 }
+
 void VGAX::fillrect(byte x, byte y, byte width, byte height, byte color) {
   byte rh=height;
   while (rh--) {
@@ -322,14 +333,17 @@ void VGAX::fillrect(byte x, byte y, byte width, byte height, byte color) {
     y++;
   }
 }
+
 void VGAX::tone(unsigned int frequency) {
   //HSYNC=32usec
   afreq=1000000 / frequency / 2 / 32;
   afreq0=afreq;
 }
+
 void VGAX::noTone() {
   afreq0=0;
 }
+
 void VGAX::delay(int msec) {
   while (msec--) {
     unsigned cnt=16000/32; //TODO: use a more precise way to calculate cnt
