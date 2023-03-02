@@ -1,3 +1,9 @@
+/*
+ VGA Arcade [print.cpp] - for 1TE663 project - Version 20230302
+
+ Minor changes to supress compile warnings.
+*/
+
 #include "VGAX.h"
 
 #define PRINT_LOOP_CODE \
