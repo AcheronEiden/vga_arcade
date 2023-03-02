@@ -130,5 +130,7 @@ SID file format description [https://www.hvsc.c64.org/download/C64Music/DOCUMENT
 
 MOS Technology 6581 wikipage [https://en.wikipedia.org/wiki/MOS_Technology_6581](https://en.wikipedia.org/wiki/MOS_Technology_6581)
 
+Converting SID traces [http://www.ucapps.de/howto_sid_wavetables_1.html](http://www.ucapps.de/howto_sid_wavetables_1.html)
+
 ## Uwe references
 Uwe:s blogg [https://www.sciencetronics.com/greenphotons/](https://www.sciencetronics.com/greenphotons/?p=337)
