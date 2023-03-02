@@ -1,5 +1,5 @@
 /*
- VGA Arcade SID - Version 20230227
+ VGA Arcade SID - Version 20230302
 
  CHANGES 2022-12-21 -- 2023-02-27 FOR 1TE663 PROJECT.
  CHANGES BY TOBIAS HOLM (/TH:) AND MOHAMMED NOUR KAMALMAZ (/MK:)
@@ -18,6 +18,8 @@
 #include "toneD.h" //RAW SID register data file in flash, Ball hit wall
 #include "toneE.h" //RAW SID register data file in flash, Ball hit brick
 #include "toneF.h" //RAW SID register data file in flash, Next level
+#define SID_ADDRESS 23
+
 /************************************************************************
 
         Arduino controls an
@@ -101,12 +103,6 @@ the specified function in case a message is recieved. The main loop can then inc
 SID mySid;
 
 
-void setup()  {
-  Wire.begin(23); // join i2c bus with address #23
-  mySid.begin();
-  
-} 
-
 void functionA() {
 for(uint16_t sidPointer=0;sidPointer<=sidLengthA;sidPointer++){
     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
@@ -167,36 +163,77 @@ for(uint16_t sidPointer=0;sidPointer<=sidLengthF;sidPointer++){
   };
 }
 
+void playSID(char c) {
+  for(uint16_t sidPointer=0;sidPointer<=sidLengthF;sidPointer++){
+      for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+        mySid.set_register(sidRegister, (pgm_read_byte(&sidDataF[(sidPointer+sidRegister)])));
+      };
+      delay(9);
+      sidPointer=sidPointer+24;
+    };
+}
+
+//TH: Wait for I2C-command
+void receiveEvent(int bytesReceived) {
+  functionD();
+  // while (Wire.available()) { // loop through all received bytes
+  //   char c = Wire.read();    // read the next byte
+  //   functionC();
+  // }
+  // // playSID(c);                // Play the wanted SID-tune
+}
+
+void setup() {
+  mySid.begin();                    //TH: SID init must be executed before wire setup
+  functionB();
+  Wire.begin(SID_ADDRESS);          // join i2c bus with address #8
+  Wire.onReceive(receiveEvent);     // function that executes whenever data is received from writer
+}
+
+uint16_t n; //TH: loop counter
 void loop() {
-  while (Wire.available() > 0) {
-  char command = Wire.read();
-    if (command == 'A') 
-    {
-      functionA();
-    }
-    else if (command == 'B')
-    {
-      functionB();
-    }
-    else if (command == 'C')
-    {
-      functionC();
-    }
-    else if (command == 'C')
-    {
-      functionC();
-    }
-    else if (command == 'D')
-    {
-      functionD();
-    }
-    else if (command == 'E')
-    {
-      functionE();
-    }
-    else if (command == 'F')
-    {
-      functionF();
-    }
-  }
+  // if (n==0) {
+  //   digitalWrite(13, HIGH);
+  // }
+  // if (n==2000) {
+  //   digitalWrite(13, LOW);
+  // }
+  // n++;
+  // if (n==4000) {
+  //   n=0;
+  // }
+  // delay(1);
+
+  // while (Wire.available() > 0) {
+  //   functionC();
+  // char command = Wire.read();
+  //   if (command == 'A') 
+  //   {
+  //     functionA();
+  //   }
+  //   else if (command == 'B')
+  //   {
+  //     functionB();
+  //   }
+  //   else if (command == 'C')
+  //   {
+  //     functionC();
+  //   }
+  //   else if (command == 'C')
+  //   {
+  //     functionC();
+  //   }
+  //   else if (command == 'D')
+  //   {
+  //     functionD();
+  //   }
+  //   else if (command == 'E')
+  //   {
+  //     functionE();
+  //   }
+  //   else if (command == 'F')
+  //   {
+  //     functionF();
+  //   }
+  // }
 }

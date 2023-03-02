@@ -9,20 +9,12 @@
 #include <math.h>
 #include <Arduino.h>
 // #include <MyNunchuk.h> //TH: External data structure to share Nunchuk data
-//#include <Nunchuk.h> //TH: To use Wii-controller, uses 35B RAM
-//#include <Wire.h> //TH: To use Wii-controller, uses 182B RAM
-//#include <I2C.h> //TH: To use Wii-controller, uses 2059-1884B= 175B RAM
 //TH: Setup Nunchuk data structure
 // uint8_t nunchuk_data[7] = {};
 //NunChukData TheNunchuk; // create an instance called 'TheNunchuk' of the class 'NunChukData'.
 //uint8_t* nunchuk_data_ptr = TheNunchuk.getNunChukData(); //TH: get a pointer to the array (NOT NEEDED WHEN USING "MyNunchuk.h")
-
-// Try 2
-// #include <Nunchuck.h> //TH: To use Wii-controller, uses 225B RAM
-// NunchuckInterface TheNunchuk2; // create an instance called 'TheNunchuk2' of the class 'NunchuckInterface'.
-
-// Try 3
 #include <Nunchuk.h> //TH: To use Wii-controller, uses 225B RAM
+#define SID_ADDRESS 23
 
 #include <VGAX.h>
 #define FNT_NANOFONT_HEIGHT 6
@@ -274,6 +266,11 @@ void processInputs() {
             //TH: int mappedValue = map(value, fromLow, fromHigh, toLow, toHigh);
             padPosition = map(n, 0, 255, 1+PadLenght, width-1-PadLenght);
          }
+         if (nunchuk_buttonC()) {
+            Wire.beginTransmission(SID_ADDRESS);
+            Wire.write('B');
+            Wire.endTransmission(true); //TH: normally set to 'true'.
+         }
       }
 
       // //TH: Clear old digits
@@ -492,7 +489,12 @@ void gameIni() {
   drawLives(); 
   drawBorder();
   drawPad();
-  drawBricksGrid(gameStep); 
+  drawBricksGrid(gameStep);
+
+   //TH: Start game music
+   Wire.beginTransmission(SID_ADDRESS);
+   Wire.write('A');
+   Wire.endTransmission(true); //TH: normally set to 'true'.
 }
 
 // ********************************* Game Start ************************************* 
