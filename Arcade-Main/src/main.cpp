@@ -14,7 +14,8 @@
 //NunChukData TheNunchuk; // create an instance called 'TheNunchuk' of the class 'NunChukData'.
 //uint8_t* nunchuk_data_ptr = TheNunchuk.getNunChukData(); //TH: get a pointer to the array (NOT NEEDED WHEN USING "MyNunchuk.h")
 #include <Nunchuk.h> //TH: To use Wii-controller, uses 225B RAM
-#define SID_ADDRESS 23
+#define SID_ADDRESS 0x0F
+//#define BUZZER     //TH: If you want buzzer sound effects
 
 #include <VGAX.h>
 #define FNT_NANOFONT_HEIGHT 6
@@ -63,6 +64,7 @@ boolean buttonStatus = 0;
 uint8_t n; //TH: Used as nameless temp-var to save RAM. (small loops, reading wheelPosition)
 uint16_t m = 0; //TH: Used to skip calls to nunchuk read to save process time
 char s[]="000";
+uint8_t playSID = 0; //TH: Sound to play
 
 struct MyFlags { //TH: define struct to hold boolean that only occupy ONE BIT each to save RAM
   uint8_t cancelSafe : 1;
@@ -111,11 +113,11 @@ uint8_t beginning = 0;
 
 //--- SOUND ------------------------------------------
 void toneL(int frequency, int duration) {
-   if (1==1) { //TH: Mute if wanted
-      vga.tone(frequency);
-      vga.delay(duration);
-      vga.noTone();
-   }
+#ifdef BUZZER
+   vga.tone(frequency);
+   vga.delay(duration);
+   vga.noTone();
+#endif
 }
 
 void setup() {
@@ -266,11 +268,17 @@ void processInputs() {
             //TH: int mappedValue = map(value, fromLow, fromHigh, toLow, toHigh);
             padPosition = map(n, 0, 255, 1+PadLenght, width-1-PadLenght);
          }
-         if (nunchuk_buttonC()) {
+         if (playSID) {
             Wire.beginTransmission(SID_ADDRESS);
-            Wire.write('B');
+            Wire.write(playSID);
             Wire.endTransmission(true); //TH: normally set to 'true'.
+            playSID = 0; //TH: Prepare to receive next sound command
          }
+         // if (nunchuk_buttonC()) {
+         //    Wire.beginTransmission(SID_ADDRESS);
+         //    Wire.write('B');
+         //    Wire.endTransmission(true); //TH: normally set to 'true'.
+         // }
       }
 
       // //TH: Clear old digits
@@ -353,12 +361,19 @@ void ballStart(){
 }
 
 void gameOver() {
-//   if(snd == 1) {
-      toneL(660, 200); 
-      toneL(330, 200);
-      toneL(165, 200); 
-      toneL(82, 200);
-//   }
+
+   toneL(660, 200); 
+   toneL(330, 200);
+   toneL(165, 200); 
+   toneL(82, 200);
+
+   playSID = 'E'; //TH: play sound GAME OVER
+   processInputs(); //TH: Start sound
+
+   // Wire.beginTransmission(SID_ADDRESS);
+   // Wire.write('E');              //TH: play sound
+   // Wire.endTransmission(true);   //TH: normally set to 'true'.
+
    vga.printPROGMEM((byte*)fnt_nanofont_data, FNT_NANOFONT_SYMBOLS_COUNT, FNT_NANOFONT_HEIGHT, 3, 1, str18, 25, 40, 1);
    ballStart(); 
    vga.clear(0);
@@ -458,7 +473,16 @@ void searchHitBrick(int bX, int bY) {
    }
    brick(2 + 1 + lenght + iDel*2*(lenght + 1), 1 + 2 + jDel*2*2, 0); 
    nBricks--; 
-   if (nBricks == 0){nextLevel();}
+   if (nBricks == 0){
+      nextLevel();
+      //playSID = 'F'; //TH: play sound NEXT LEVEL
+      //processInputs(); //TH: Start sound
+      Wire.beginTransmission(SID_ADDRESS);
+      Wire.write('F');              //TH: play sound
+      Wire.endTransmission(true);   //TH: normally set to 'true'.
+      vga.delay(2000);
+      speedT = .02; //TH: Ball speed .03 orginal
+   }
 }
 
 void drawBall(int x, int y, int col) {
@@ -482,7 +506,7 @@ void ballCoordinates() {
 //TH: Moved function
 void gameIni() {
   lives = 9;
-  speedT = .03; 
+  speedT = .01; //TH: Ball speed .03 orginal
   gameStep = 0; 
   angleDeg = 180/4; 
   parameterUpdate(); 
@@ -490,11 +514,12 @@ void gameIni() {
   drawBorder();
   drawPad();
   drawBricksGrid(gameStep);
+   playSID = 'A'; //TH: play sound START GAME
 
    //TH: Start game music
-   Wire.beginTransmission(SID_ADDRESS);
-   Wire.write('A');
-   Wire.endTransmission(true); //TH: normally set to 'true'.
+   // Wire.beginTransmission(SID_ADDRESS);
+   // Wire.write('A');              //TH: play sound
+   // Wire.endTransmission(true);   //TH: normally set to 'true'.
 }
 
 // ********************************* Game Start ************************************* 
@@ -535,17 +560,20 @@ void loop() {
         if ( (hitScore == 3) | (hitScore == 12) ) //TH: Fixed paranthesis around OR operand 
         {
            speedY = -speedY;
+            playSID = 'D'; //TH: play sound HIT WALL
         }
         else
         {
            if ( (hitScore == 5) | (hitScore == 10) ) //TH: Fixed paranthesis around OR operand
            {
               speedX = -speedX;
+               playSID = 'D'; //TH: play sound HIT WALL
            }
            else 
            {
               speedX = -speedX;
               speedY = -speedY;
+               playSID = 'D'; //TH: play sound HIT WALL
            }
         }
         if (ballY > 55) 
@@ -555,16 +583,22 @@ void loop() {
               angleDeg = angleDeg - 2*speedX/abs(speedX)*(padPosition - ballX); 
               if (angleDeg < 20) {angleDeg = 20;}
               if (angleDeg > 70) {angleDeg = 70;}
-              parameterUpdate(); 
+              parameterUpdate();
+
+               playSID = 'B'; //TH: play sound HIT PAD
            } 
            else // *************** ball hits the bottom *************************
            {
               
               lives = lives - 1; 
               if (lives |= 0){
-//                  if(snd == 1) {
-                     toneL(110,100);
-//                  }
+                  toneL(110,100);
+
+                  //playSID = 'C'; //TH: play sound GAME OVER
+                  Wire.beginTransmission(SID_ADDRESS);
+                  Wire.write('C');              //TH: play sound GAME OVER
+                  Wire.endTransmission(true);   //TH: normally set to 'true'.
+                  vga.delay(2000);
               }
               drawLives(); 
               ballStart(); 
@@ -574,9 +608,11 @@ void loop() {
         }
         else if (ballX > 1 && ballX + 1 < width - 1 && ballY > 1) // *********** ball hits a brick *******************
         {
-//            if(snd == 1) {
-              toneL(440,30);
-//            }
+
+            toneL(440,30);
+
+            playSID = 'E'; //TH: play sound HIT BRICK
+
            if ( (hitScore == 1) | (hitScore == 3) ) {ballXhit = ballX; ballYhit = ballY;}          //TH: Fixed paranthesis around OR operand
            if ( (hitScore == 2) | (hitScore == 10) ) {ballXhit = ballX + 1; ballYhit = ballY;}     //TH: Fixed paranthesis around OR operand
            if ( (hitScore == 8) | (hitScore == 12) ) {ballXhit = ballX + 1; ballYhit = ballY + 1;} //TH: Fixed paranthesis around OR operand
