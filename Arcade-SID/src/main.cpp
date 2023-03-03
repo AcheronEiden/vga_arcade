@@ -18,7 +18,12 @@
 #include "toneD.h" //RAW SID register data file in flash, Ball hit wall
 #include "toneE.h" //RAW SID register data file in flash, Ball hit brick
 #include "toneF.h" //RAW SID register data file in flash, Next level
-#define SID_ADDRESS 23
+#define SID_ADDRESS 0x0F                    //TH: I2C address
+const unsigned char *sidPointer = sidDataC; //TH: Setup pointer to sound data
+// *ptr = sidDataY; It's WRONG to use * to set ptr to the memory address of sidDataY
+// sidPointer = sidDataA; //TH: Reset sidPointer to start of data array
+uint8_t play = 0;                           //TH: 1=Plays sound
+//#define DBG                               //TH: Serial debug output enabled
 
 /************************************************************************
 
@@ -101,111 +106,152 @@ the specified function in case a message is recieved. The main loop can then inc
 */
 
 SID mySid;
+// void functionA() {
+// for(uint16_t sidPointer=0;sidPointer<=sidLengthA;sidPointer++){
+//     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+//       mySid.set_register(sidRegister, (pgm_read_byte(&sidDataA[(sidPointer+sidRegister)])));
+//     };
+//     delay(9);
+//     sidPointer=sidPointer+24;
+//   };
+// }
 
+// void functionB() {
+// for(uint16_t sidPointer=0;sidPointer<=sidLengthB;sidPointer++){
+//     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+//       mySid.set_register(sidRegister, (pgm_read_byte(&sidDataB[(sidPointer+sidRegister)])));
+//     };
+//     delay(9);
+//     sidPointer=sidPointer+24;
+//   };
+// }
 
-void functionA() {
-for(uint16_t sidPointer=0;sidPointer<=sidLengthA;sidPointer++){
-    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
-      mySid.set_register(sidRegister, (pgm_read_byte(&sidDataA[(sidPointer+sidRegister)])));
-    };
-    delay(9);
-    sidPointer=sidPointer+24;
-  };
-}
+// void functionC() {
+// for(uint16_t sidPointer=0;sidPointer<=sidLengthC;sidPointer++){
+//     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+//       mySid.set_register(sidRegister, (pgm_read_byte(&sidDataC[(sidPointer+sidRegister)])));
+//     };
+//     delay(9);
+//     sidPointer=sidPointer+24;
+//   };
+// }
 
-void functionB() {
-for(uint16_t sidPointer=0;sidPointer<=sidLengthB;sidPointer++){
-    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
-      mySid.set_register(sidRegister, (pgm_read_byte(&sidDataB[(sidPointer+sidRegister)])));
-    };
-    delay(9);
-    sidPointer=sidPointer+24;
-  };
-}
+// void functionD() {
+// for(uint16_t sidPointer=0;sidPointer<=sidLengthD;sidPointer++){
+//     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+//       mySid.set_register(sidRegister, (pgm_read_byte(&sidDataD[(sidPointer+sidRegister)])));
+//     };
+//     delay(9);
+//     sidPointer=sidPointer+24;
+//   };
+// }
 
-void functionC() {
-for(uint16_t sidPointer=0;sidPointer<=sidLengthC;sidPointer++){
-    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
-      mySid.set_register(sidRegister, (pgm_read_byte(&sidDataC[(sidPointer+sidRegister)])));
-    };
-    delay(9);
-    sidPointer=sidPointer+24;
-  };
-}
+// void functionE() {
+// for(uint16_t sidPointer=0;sidPointer<=sidLengthE;sidPointer++){
+//     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+//       mySid.set_register(sidRegister, (pgm_read_byte(&sidDataE[(sidPointer+sidRegister)])));
+//     };
+//     delay(9);
+//     sidPointer=sidPointer+24;
+//   };
+// }
 
-void functionD() {
-for(uint16_t sidPointer=0;sidPointer<=sidLengthD;sidPointer++){
-    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
-      mySid.set_register(sidRegister, (pgm_read_byte(&sidDataD[(sidPointer+sidRegister)])));
-    };
-    delay(9);
-    sidPointer=sidPointer+24;
-  };
-}
+// void functionF() {
+// for(uint16_t sidPointer=0;sidPointer<=sidLengthF;sidPointer++){
+//     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
+//       mySid.set_register(sidRegister, (pgm_read_byte(&sidDataF[(sidPointer+sidRegister)])));
+//     };
+//     delay(9);
+//     sidPointer=sidPointer+24;
+//   };
+// }
 
-void functionE() {
-for(uint16_t sidPointer=0;sidPointer<=sidLengthE;sidPointer++){
-    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
-      mySid.set_register(sidRegister, (pgm_read_byte(&sidDataE[(sidPointer+sidRegister)])));
-    };
-    delay(9);
-    sidPointer=sidPointer+24;
-  };
-}
-
-void functionF() {
-for(uint16_t sidPointer=0;sidPointer<=sidLengthF;sidPointer++){
-    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
-      mySid.set_register(sidRegister, (pgm_read_byte(&sidDataF[(sidPointer+sidRegister)])));
-    };
-    delay(9);
-    sidPointer=sidPointer+24;
-  };
-}
-
-void playSID(char c) {
-  for(uint16_t sidPointer=0;sidPointer<=sidLengthF;sidPointer++){
-      for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++){
-        mySid.set_register(sidRegister, (pgm_read_byte(&sidDataF[(sidPointer+sidRegister)])));
-      };
-      delay(9);
-      sidPointer=sidPointer+24;
-    };
-}
 
 //TH: Wait for I2C-command
 void receiveEvent(int bytesReceived) {
-  functionD();
-  // while (Wire.available()) { // loop through all received bytes
-  //   char c = Wire.read();    // read the next byte
-  //   functionC();
+  char c;
+  while (Wire.available()) {        // loop through all received bytes
+    c = Wire.read();                // read the next byte
+  }
+
+  const unsigned char* sidData[] = {sidDataA, sidDataB, sidDataC, sidDataD, sidDataE, sidDataF};
+  const char inputChars[] = {'A', 'B', 'C', 'D', 'E', 'F'};
+
+  for (uint8_t i = 0; i < sizeof(inputChars); i++) {
+      if (c == inputChars[i]) {
+          sidPointer = sidData[i];
+          play = 1;
+          break;
+      }
+  }
+
+  // switch(c) {
+  //     case 'A':
+  //         sidPointer = sidDataA;    //TH: Set sidPointer to start of data array
+  //         play = 1;
+  //         break;
+  //     case 'B':
+  //         sidPointer = sidDataB;
+  //         play = 1;
+  //         break;
+  //     case 'C':
+  //         sidPointer = sidDataC;
+  //         play = 1;
+  //         break;
+  //     case 'D':
+  //         sidPointer = sidDataD;
+  //         play = 1;
+  //         break;
+  //     case 'E':
+  //         sidPointer = sidDataE;
+  //         play = 1;
+  //         break;
+  //     case 'F':
+  //         sidPointer = sidDataF;
+  //         play = 1;
+  //         break;
+  //     default:
+  //         Serial.print("No match! ");
   // }
-  // // playSID(c);                // Play the wanted SID-tune
+
+#ifdef DBG
+  Serial.print("I2C:");
+  Serial.print(c);
+  Serial.print(" ");
+#endif
 }
+
 
 void setup() {
   mySid.begin();                    //TH: SID init must be executed before wire setup
-  functionB();
-  Wire.begin(SID_ADDRESS);          // join i2c bus with address #8
+  Wire.begin(SID_ADDRESS);          // join I2C bus with specified address
   Wire.onReceive(receiveEvent);     // function that executes whenever data is received from writer
+#ifdef DBG
+  Serial.begin(115200);
+#endif
 }
 
-uint16_t n; //TH: loop counter
+
 void loop() {
-  // if (n==0) {
-  //   digitalWrite(13, HIGH);
-  // }
-  // if (n==2000) {
-  //   digitalWrite(13, LOW);
-  // }
-  // n++;
-  // if (n==4000) {
-  //   n=0;
-  // }
-  // delay(1);
+  while (play) {
+    unsigned char c;
+    for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++) {
+      c = pgm_read_byte(sidPointer++);
+      mySid.set_register(sidRegister, c);
+    }
+    delay(9);
+    if (c == 0xF0) {
+      play = 0;
+#ifdef DBG
+      Serial.print(":EOF\n");
+#endif
+      break;
+    }
+  }
+
 
   // while (Wire.available() > 0) {
-  //   functionC();
+  //   // functionC();
   // char command = Wire.read();
   //   if (command == 'A') 
   //   {
