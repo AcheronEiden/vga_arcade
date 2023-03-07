@@ -1,5 +1,5 @@
 /*
- VGA Arcade [VGAX.h] - for 1TE663 project - Version 20230224
+ VGA Arcade [VGAX.h] - for 1TE663 project - Version 20230306
 
  Changed resolution to 112x60 to save SRAM.
 
@@ -63,6 +63,8 @@ extern byte vgaxfb[VGAX_HEIGHT*VGAX_BWIDTH];
 
 //clock replacement. this is increment in the VSYNC interrupt, so run at 60Hz
 extern unsigned long vtimer;
+// extern uint16_t rasterline;
+// extern byte rlinecnt; //TH: Made this variable accessible from other modules
 
 //VGAX class. This is a static class. Multiple instances will not work
 class VGAX {

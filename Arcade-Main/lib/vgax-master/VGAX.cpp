@@ -1,5 +1,5 @@
 /*
- VGA Arcade [VGAX.cpp] - for 1TE663 project - Version 20230224
+ VGA Arcade [VGAX.cpp] - for 1TE663 project - Version 20230306
 
  Changed resolution to 112x60 to save SRAM.
  Changed center line for better centering.
@@ -55,7 +55,9 @@ You can modify this value to center the framebuffer vertically, or not*/
 
 static byte afreq, afreq0;
 unsigned long vtimer;
-static byte aline, rlinecnt;
+// uint16_t rasterline;
+//static byte aline, rlinecnt;
+byte aline, rlinecnt; //TH: Made this variable accessible from other modules
 static byte vskip;
 uint8_t blank = 0; //TH: 0=In safe blanking zone
 byte vgaxfb[VGAX_HEIGHT*VGAX_BWIDTH];
@@ -65,7 +67,8 @@ ISR(TIMER1_OVF_vect) {
   aline=-1;
   vskip=SKIPLINES;
   vtimer++;
-  rlinecnt=0; //TH:Reset Rasterline counter?
+  rlinecnt=0;
+  // rasterline=0; //TH:Reset Rasterline counter
 
   blank = 0; //TH: Set safe zone flag
   PORTC |= 0b00000010; //TH: DEBUG Set    portC bit 1 (signal A1) ENTERING SAFE ZONE
@@ -99,39 +102,46 @@ ISR(TIMER2_OVF_vect) {
   needs to be generated
   */
   //generate audio modulation. around 15 clocks
-  asm volatile(                                   //4c to load Z and Y
-    "      ld r16, Z                        \n\t" //c1 r16=afreq
-    "      cpi %[freq0], 0                  \n\t" //c1 afreq0==0 ?
-    "      breq no_audio                    \n\t" //c1/2 *0
-    "play_audio:                            \n\t" 
-    "      cpi r16, 0                       \n\t" //c1 afreq==0 ?
-    "      brne dont_flip_audio_pin         \n\t" //c1/2 *1
-    "flip_audio_pin:                        \n\t" 
-    "      ldi r18, 1                       \n\t" //c1
-    "      out %[audiopin], r18             \n\t" //c1
-    "      st Z, %[freq0]                   \n\t" //c1 afreq=afreq0
-    "      rjmp end                         \n\t" //c2
-    //"    mov r16, %[freq0]\n\r"
-    //"    dec r16\n\r"
-    "no_audio:                              \n\t" 
-    "      nop                              \n\t" //c1
-    "      nop                              \n\t" //c1
-    "      nop                              \n\t" //c1
-    //"    nop                              \n\t" //c1
-    "      nop                              \n\t" //c1
-    "      nop                              \n\t" //c1
-    "      nop                              \n\t" //c1
-    "      rjmp end                         \n\t" //c2
-    "dont_flip_audio_pin:                   \n\t" 
-    "      dec r16                          \n\t" //c1
-    "      st Z, r16                        \n\t" //c1
-    //"    nop                              \n\t" //c1
-    "end:                                   \n\t"
-  :
-  : "z" (&afreq),
-    [freq0] "r" (afreq0),
-    [audiopin] "i" _SFR_IO_ADDR(PINC)
-  : "r16", "r18");
+  // asm volatile(                                   //4c to load Z and Y
+  //   "      ld r16, Z                        \n\t" //c1 r16=afreq
+  //   "      cpi %[freq0], 0                  \n\t" //c1 afreq0==0 ?
+  //   "      breq no_audio                    \n\t" //c1/2 *0
+  //   "play_audio:                            \n\t" 
+  //   "      cpi r16, 0                       \n\t" //c1 afreq==0 ?
+  //   "      brne dont_flip_audio_pin         \n\t" //c1/2 *1
+  //   "flip_audio_pin:                        \n\t" 
+  //   "      ldi r18, 1                       \n\t" //c1
+  //   "      out %[audiopin], r18             \n\t" //c1
+  //   "      st Z, %[freq0]                   \n\t" //c1 afreq=afreq0
+  //   "      rjmp end                         \n\t" //c2
+  //   //"    mov r16, %[freq0]\n\r"
+  //   //"    dec r16\n\r"
+  //   "no_audio:                              \n\t" 
+  //   "      nop                              \n\t" //c1
+  //   "      nop                              \n\t" //c1
+  //   "      nop                              \n\t" //c1
+  //   //"    nop                              \n\t" //c1
+  //   "      nop                              \n\t" //c1
+  //   "      nop                              \n\t" //c1
+  //   "      nop                              \n\t" //c1
+  //   "      rjmp end                         \n\t" //c2
+  //   "dont_flip_audio_pin:                   \n\t" 
+  //   "      dec r16                          \n\t" //c1
+  //   "      st Z, r16                        \n\t" //c1
+  //   //"    nop                              \n\t" //c1
+  //   "end:                                   \n\t"
+  // :
+  // : "z" (&afreq),
+  //   [freq0] "r" (afreq0),
+  //   [audiopin] "i" _SFR_IO_ADDR(PINC)
+  // : "r16", "r18");
+
+  //TH: Adjust horizontal placement of picture
+    asm volatile (
+      ".rept 36              \n\t" //center image (36 REPITITIONS)
+      "    nop              \n\t" //
+      ".endr                \n\t");
+  // rasterline++;
 
   //check vertical porch
   if (vskip) {
@@ -256,7 +266,7 @@ void VGAX::begin(bool enableTone) {
   cli();
   //setup audio pin
   if (enableTone) {
-    pinMode(A0, OUTPUT);
+    // pinMode(A0, OUTPUT);
     // pinMode(A0, INPUT); //TH: Mute audio, but still use VGAX output. Two lines of same gave stable video when beeping...
   }
   //disable TIMER0 interrupt

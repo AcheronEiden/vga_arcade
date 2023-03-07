@@ -1,7 +1,7 @@
 /*
- VGA Arcade SID - Version 20230302
+ Arcade SID [main.cpp] - for 1TE663 project - Version 20230305
 
- CHANGES 2022-12-21 -- 2023-02-27 FOR 1TE663 PROJECT.
+ Based on "Atmega8 MOS6581 SID Emulator" by Christoph Haberer.
  CHANGES BY TOBIAS HOLM (/TH:) AND MOHAMMED NOUR KAMALMAZ (/MK:)
 */
 
@@ -12,18 +12,29 @@
 #include <inttypes.h>
 #include <String.h>
 #include <avr/pgmspace.h>  //used to store data in the flash rom
-#include "toneA.h" //RAW SID register data file in flash, Gameplay music (play at start)
-#include "toneB.h" //RAW SID register data file in flash, Ball hit pad
-#include "toneC.h" //RAW SID register data file in flash, Game Over
-#include "toneD.h" //RAW SID register data file in flash, Ball hit wall
-#include "toneE.h" //RAW SID register data file in flash, Ball hit brick
-#include "toneF.h" //RAW SID register data file in flash, Next level
+#include "Arkanoid03.h" //RAW SID register data file 'A', Gameplay music, play at start
+#include "toneB.h"      //RAW SID register data file 'B', Ball hit pad
+#include "Arkanoid15.h" //RAW SID register data file 'C', Game Over
+#include "toneD.h"      //RAW SID register data file 'D', Ball hit wall  (Arkanoid16)
+//#include "Arkanoid10.h" //RAW SID register data file 'E', Ball hit brick (Arkanoid10)
+#include "toneE.h"      //RAW SID register data file 'E', Ball hit brick (Arkanoid10)
+#include "toneF.h"      //RAW SID register data file 'F', Next level     (Arkanoid07)
+#include "Arkanoid18.h" //RAW SID register data file 'G', Lost one life
 #define SID_ADDRESS 0x0F                    //TH: I2C address
-const unsigned char *sidPointer = sidDataC; //TH: Setup pointer to sound data
+const unsigned char *sidPointer = sidDataE; //TH: Setup pointer to sound data
 // *ptr = sidDataY; It's WRONG to use * to set ptr to the memory address of sidDataY
 // sidPointer = sidDataA; //TH: Reset sidPointer to start of data array
 uint8_t play = 0;                           //TH: 1=Plays sound
 //#define DBG                               //TH: Serial debug output enabled
+
+  const unsigned char* sidData[] = {sidDataArkanoid03,
+                                    sidDataB,
+                                    sidDataArkanoid15,
+                                    sidDataD,
+                                    sidDataE,
+                                    sidDataF,
+                                    sidDataArkanoid18};
+  const char inputChars[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G'};
 
 /************************************************************************
 
@@ -174,9 +185,6 @@ void receiveEvent(int bytesReceived) {
     c = Wire.read();                // read the next byte
   }
 
-  const unsigned char* sidData[] = {sidDataA, sidDataB, sidDataC, sidDataD, sidDataE, sidDataF};
-  const char inputChars[] = {'A', 'B', 'C', 'D', 'E', 'F'};
-
   for (uint8_t i = 0; i < sizeof(inputChars); i++) {
       if (c == inputChars[i]) {
           sidPointer = sidData[i];
@@ -184,35 +192,6 @@ void receiveEvent(int bytesReceived) {
           break;
       }
   }
-
-  // switch(c) {
-  //     case 'A':
-  //         sidPointer = sidDataA;    //TH: Set sidPointer to start of data array
-  //         play = 1;
-  //         break;
-  //     case 'B':
-  //         sidPointer = sidDataB;
-  //         play = 1;
-  //         break;
-  //     case 'C':
-  //         sidPointer = sidDataC;
-  //         play = 1;
-  //         break;
-  //     case 'D':
-  //         sidPointer = sidDataD;
-  //         play = 1;
-  //         break;
-  //     case 'E':
-  //         sidPointer = sidDataE;
-  //         play = 1;
-  //         break;
-  //     case 'F':
-  //         sidPointer = sidDataF;
-  //         play = 1;
-  //         break;
-  //     default:
-  //         Serial.print("No match! ");
-  // }
 
 #ifdef DBG
   Serial.print("I2C:");
@@ -223,7 +202,7 @@ void receiveEvent(int bytesReceived) {
 
 
 void setup() {
-  mySid.begin();                    //TH: SID init must be executed before wire setup
+  mySid.begin();                    //TH: SID init executed before wire setup
   Wire.begin(SID_ADDRESS);          // join I2C bus with specified address
   Wire.onReceive(receiveEvent);     // function that executes whenever data is received from writer
 #ifdef DBG
@@ -234,14 +213,19 @@ void setup() {
 
 void loop() {
   while (play) {
-    unsigned char c;
+    unsigned char c,d,e;
     for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++) {
+      e = d; //TH: Save previous register
+      d = c; //TH: Save previous register
       c = pgm_read_byte(sidPointer++);
       mySid.set_register(sidRegister, c);
     }
     delay(9);
-    if (c == 0xF0) {
-      play = 0;
+    if ((c == 0xF0) | (e != 0x2F)) { //TH: Stop playing if stop code, or if not continue code (we use unused filter data for cont.code)
+      play = 0; //TH: Stop playing
+      for(uint8_t sidRegister=0;sidRegister<=24;sidRegister++) { //TH: Kill sound
+        mySid.set_register(sidRegister, 0);
+      }
 #ifdef DBG
       Serial.print(":EOF\n");
 #endif
