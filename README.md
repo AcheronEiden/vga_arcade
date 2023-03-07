@@ -59,31 +59,31 @@ GND and +3.3V is also connected to the Wii-controller.
 The project milestones:
 - [x] Get a stable VGA image on a TFT-screen using GPIO/timers/PWM/interrupts.
 - [x] Use an analog potentiometer to control the game paddle (abandoned).
-- [ ] Use an analog potentiometer for volume using ADC + OSD display.
+- [x] Use an analog potentiometer for volume using external amp IC.
 - [x] Moving bouncing ball in a playable game.
-- [ ] Use a Wii-nunchuk (I2C) to control the game paddle.
-- [ ] Create advanced music and sfx using a secondary Arduino.
-- [ ] Create an simple AI that can play against a human player.
-- [ ] Create a 3D-printed box for the hardware.
-- [ ] Create the project report (=> 10 pages).
-- [ ] Create a project presentation (Google Presentation).
+- [x] Use a Wii-nunchuk (I2C) to control the game paddle.
+- [x] Create advanced music and sfx using a secondary Arduino.
+- [x] Create a 3D-printed box for the hardware.
+- [x] Create the project report (=> 10 pages).
 
-The actual project progress are marked below:
+The project progress are marked below:
 - [x] Code adjustment for C++ syntax.
 - [x] Prototype hardware constructed and assembled.
 - [x] Both ordinary buttons are now active low with internal pull-ups.
-- [x] Simple buzzer sound effects.
-- [ ] Wii-nunchuk routine that can coexist with VGA timing.
-- [ ] SID Music and sound effects using an slave Atmel 328P.
-- [ ] Music controlled using I2C.
-- [ ] OSD-display for volume knob using ADC.
+- [x] Simple buzzer sound effects tests.
+- [x] Wii-nunchuk routine that can coexist with VGA timing.
+- [x] SID Music and sound effects using an slave Atmel 328P.
+- [x] Music controlled using I2C.
+- [x] Full screen animations for main and load screens.
 
 
 # External resources
 This project uses the following public libraries and also used information from external sites listed below. The libraries are often modified to suit this project and we have made comments in the code when edits are made. In some parts of this project only smaller fractions of the public libraries are used.
 
 ## VGA references
-VGAXUA Library for Arduino UNO and MEGA [https://github.com/smaffer/vgaxua](https://github.com/smaffer/vgaxua)
+VGAX library for Arduino UNO and MEGA [smaffer github page](https://github.com/smaffer/vgax)
+
+VGAXUA library for Arduino UNO and MEGA [https://github.com/smaffer/vgaxua](https://github.com/smaffer/vgaxua)
 
 Electrical connections for VGA-cable [https://forum.arduino.cc/t/vga-library-for-arduino-uno-and-atmega328/308936](https://forum.arduino.cc/t/vga-library-for-arduino-uno-and-atmega328/308936)
 
