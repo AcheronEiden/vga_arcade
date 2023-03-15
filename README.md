@@ -1,4 +1,4 @@
-Forked from Tobias Holm & Mohammed Nour Kamalmaz
+Forked from Tobias Holm & Mohammed Nour Kamalmaz project which aims to make a Breakout game (Pong with one player and blocks)
 # vga_arcade
 1TE663 project
 
